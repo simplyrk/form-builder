@@ -190,25 +190,19 @@ export async function updateResponse(responseId: string, fieldValues: Record<str
     throw new Error('Response not found or unauthorized');
   }
 
-  // Update the response fields
-  await prisma.$transaction(
-    Object.entries(fieldValues).map(([fieldId, value]) =>
-      prisma.responseField.upsert({
-        where: {
-          responseId_fieldId: {
-            responseId,
-            fieldId,
-          },
-        },
-        update: { value },
-        create: {
-          responseId,
-          fieldId,
-          value,
-        },
-      })
-    )
-  );
+  // Delete existing response fields
+  await prisma.responseField.deleteMany({
+    where: { responseId },
+  });
+
+  // Create new response fields
+  await prisma.responseField.createMany({
+    data: Object.entries(fieldValues).map(([fieldId, value]) => ({
+      responseId,
+      fieldId,
+      value,
+    })),
+  });
 
   return { success: true };
 }

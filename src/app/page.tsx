@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserResponsesTable } from '@/components/user-responses-table';
@@ -19,10 +19,12 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) {
-      fetchData();
+    if (!userId) {
+      router.push('/sign-in');
+      return;
     }
-  }, [userId]);
+    fetchData();
+  }, [userId, router]);
 
   const fetchData = async () => {
     try {
@@ -70,19 +72,7 @@ export default function HomePage() {
   };
 
   if (!userId) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Welcome to Form Builder</CardTitle>
-            <CardDescription>Please sign in to access your forms and responses.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push('/sign-in')}>Sign In</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   if (error) {

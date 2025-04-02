@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
+import { SignOutButton } from '@clerk/nextjs';
 
 export function Navbar() {
   const { user, isSignedIn } = useUser();
@@ -28,9 +29,9 @@ export function Navbar() {
                 {user.firstName || user.username}
               </span>
             </div>
-            <Button variant="ghost" asChild>
-              <Link href="/sign-out">Sign Out</Link>
-            </Button>
+            <SignOutButton>
+              <Button variant="ghost">Sign Out</Button>
+            </SignOutButton>
           </div>
         </div>
       </div>

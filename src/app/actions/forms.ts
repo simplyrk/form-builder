@@ -77,149 +77,140 @@ export async function updateForm(id: string, data: FormInput) {
   return updatedForm as Form;
 }
 
-export async function toggleFormPublish(id: string) {
+export async function toggleFormPublish(formId: string) {
   const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
-
-  // First verify that the form belongs to the user
-  const form = await prisma.form.findUnique({
-    where: { id },
-  });
-
-  if (!form || form.createdBy !== userId) {
+  if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const updatedForm = await prisma.form.update({
-    where: { id },
-    data: {
-      published: !form.published,
-    },
-    include: {
-      fields: true,
-    },
+  const form = await prisma.form.findUnique({
+    where: { id: formId },
   });
 
-  revalidatePath('/admin');
-  return updatedForm as Form;
+  if (!form || form.createdBy !== userId) {
+    throw new Error('Form not found or unauthorized');
+  }
+
+  return prisma.form.update({
+    where: { id: formId },
+    data: { published: !form.published },
+  });
 }
 
-export async function deleteForm(id: string) {
+export async function deleteForm(formId: string) {
   const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
-
-  // First verify that the form belongs to the user
-  const form = await prisma.form.findUnique({
-    where: { id },
-  });
-
-  if (!form || form.createdBy !== userId) {
+  if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  // Delete the form (this will cascade delete the fields)
-  await prisma.form.delete({
-    where: { id },
+  const form = await prisma.form.findUnique({
+    where: { id: formId },
   });
 
-  revalidatePath('/admin');
+  if (!form || form.createdBy !== userId) {
+    throw new Error('Form not found or unauthorized');
+  }
+
+  // Delete everything in the correct order using a transaction
+  await prisma.$transaction(async (tx) => {
+    // Get all response IDs for this form
+    const responses = await tx.response.findMany({
+      where: { formId },
+      select: { id: true },
+    });
+    const responseIds = responses.map((r: { id: string }) => r.id);
+
+    // Delete response fields
+    await tx.responseField.deleteMany({
+      where: { responseId: { in: responseIds } },
+    });
+
+    // Delete responses
+    await tx.response.deleteMany({
+      where: { formId },
+    });
+
+    // Delete form fields
+    await tx.field.deleteMany({
+      where: { formId },
+    });
+
+    // Finally delete the form
+    await tx.form.delete({
+      where: { id: formId },
+    });
+  });
 }
 
 export async function deleteResponses(responseIds: string[]) {
   const { userId } = await auth();
   if (!userId) {
-    return { success: false, error: 'Unauthorized' };
+    throw new Error('Unauthorized');
   }
 
-  try {
-    // First verify that all responses exist and belong to either the user or their forms
-    const responses = await prisma.response.findMany({
-      where: {
-        id: { in: responseIds },
-      },
-      include: {
-        form: true,
-      },
-    });
+  // Get the form IDs for these responses
+  const responses = await prisma.response.findMany({
+    where: { id: { in: responseIds } },
+    select: { formId: true },
+  });
 
-    if (responses.length === 0) {
-      return { success: false, error: 'No responses found' };
-    }
+  // Verify the user owns all the forms
+  const formIds = [...new Set(responses.map(r => r.formId))];
+  const forms = await prisma.form.findMany({
+    where: { id: { in: formIds } },
+    select: { id: true, createdBy: true },
+  });
 
-    // Check if user is authorized to delete each response
-    const unauthorizedResponses = responses.filter(
-      (response: { form: { createdBy: string }; submittedBy: string }) => 
-        response.form.createdBy !== userId && response.submittedBy !== userId
-    );
-
-    if (unauthorizedResponses.length > 0) {
-      return { success: false, error: 'Unauthorized: Cannot delete responses that do not belong to you or your forms' };
-    }
-
-    // Delete response fields first
-    await prisma.responseField.deleteMany({
-      where: {
-        responseId: { in: responseIds },
-      },
-    });
-
-    // Then delete the responses
-    await prisma.response.deleteMany({
-      where: {
-        id: { in: responseIds },
-      },
-    });
-
-    // Revalidate all relevant paths
-    revalidatePath('/admin');
-    revalidatePath('/forms');
-    responses.forEach((response: { formId: string }) => {
-      revalidatePath(`/admin/forms/${response.formId}/responses`);
-      revalidatePath(`/forms/${response.formId}/responses`);
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting responses:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete responses' };
+  const unauthorizedForms = forms.filter(form => form.createdBy !== userId);
+  if (unauthorizedForms.length > 0) {
+    throw new Error('Unauthorized to delete responses from some forms');
   }
+
+  // Delete the responses
+  await prisma.response.deleteMany({
+    where: { id: { in: responseIds } },
+  });
+
+  return { success: true };
 }
 
-export async function updateResponse(responseId: string, formData: Record<string, string>) {
+export async function updateResponse(responseId: string, fieldValues: Record<string, string>) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  // Get the response and its form to verify ownership
+  // Get the response and its form
   const response = await prisma.response.findUnique({
     where: { id: responseId },
     include: { form: true },
   });
 
-  // Allow both the form creator and the response submitter to update
-  if (!response || (response.form.createdBy !== userId && response.submittedBy !== userId)) {
-    throw new Error('Unauthorized');
+  if (!response || response.form.createdBy !== userId) {
+    throw new Error('Response not found or unauthorized');
   }
 
-  // Delete existing field responses
-  await prisma.responseField.deleteMany({
-    where: { responseId },
-  });
+  // Update the response fields
+  await prisma.$transaction(
+    Object.entries(fieldValues).map(([fieldId, value]) =>
+      prisma.responseField.upsert({
+        where: {
+          responseId_fieldId: {
+            responseId,
+            fieldId,
+          },
+        },
+        update: { value },
+        create: {
+          responseId,
+          fieldId,
+          value,
+        },
+      })
+    )
+  );
 
-  // Create new field responses
-  const fieldResponses = Object.entries(formData).map(([fieldId, value]) => ({
-    responseId,
-    fieldId,
-    value,
-  }));
-
-  await prisma.responseField.createMany({
-    data: fieldResponses,
-  });
-
-  revalidatePath(`/admin/forms/${response.formId}/responses`);
-  revalidatePath(`/forms/${response.formId}/responses`);
+  return { success: true };
 }
 
 export async function submitResponse(formId: string, formData: Record<string, string>) {

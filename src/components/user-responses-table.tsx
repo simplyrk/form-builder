@@ -113,10 +113,12 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>This action cannot be undone. This will permanently delete the selected responses.</p>
-              <p className="text-sm text-red-500">Warning: Deleted responses cannot be recovered.</p>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the selected responses.
             </AlertDialogDescription>
+            <div className="text-sm text-red-500 mt-2">
+              Warning: Deleted responses cannot be recovered.
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

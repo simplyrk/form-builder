@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Form, Response } from '@/types/form';
 import {
@@ -17,22 +17,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useToast } from '@/components/ui/use-toast';
 
-interface ResponseTableProps {
-  form: Form;
-  responses: Response[];
-  userMap: Map<string, string>;
-  onDelete: (responseIds: string[]) => void;
-  isDeleting?: boolean;
+interface AdminResponsesTableProps {
+  responses: Array<Response & { form: Form }>;
+  onDelete: (responseIds: string[]) => Promise<{ success: boolean; error?: string }>;
 }
 
 function getShortId(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
-export function ResponseTable({ form, responses, userMap, onDelete, isDeleting = false }: ResponseTableProps) {
+export function AdminResponsesTable({ responses, onDelete }: AdminResponsesTableProps) {
+  const { toast } = useToast();
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const toggleResponse = (responseId: string) => {
     const newSelected = new Set(selectedResponses);
@@ -56,9 +56,33 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
-    onDelete(Array.from(selectedResponses));
-    setShowDeleteDialog(false);
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const result = await onDelete(Array.from(selectedResponses));
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: 'Selected responses deleted successfully',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to delete responses',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setSelectedResponses(new Set());
+    }
   };
 
   return (
@@ -117,14 +141,9 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
                   disabled={isDeleting}
                 />
               </th>
+              <th className="p-2 text-left text-sm font-medium">Survey Name</th>
               <th className="p-2 text-left text-sm font-medium">Submission ID</th>
-              <th className="p-2 text-left text-sm font-medium">Submitted By</th>
-              <th className="p-2 text-left text-sm font-medium">Date</th>
-              {form.fields.map(field => (
-                <th key={field.id} className="p-2 text-left text-sm font-medium">
-                  {field.label}
-                </th>
-              ))}
+              <th className="p-2 text-left text-sm font-medium">Submission Date</th>
               <th className="p-2 text-left text-sm font-medium">Actions</th>
             </tr>
           </thead>
@@ -138,22 +157,31 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
                     disabled={isDeleting}
                   />
                 </td>
+                <td className="p-2 text-sm">{response.form.title}</td>
                 <td className="p-2 font-mono text-sm">{getShortId(response.id)}</td>
-                <td className="p-2 text-sm">{userMap.get(response.submittedBy) || 'Anonymous User'}</td>
                 <td className="p-2 text-sm">
                   {format(new Date(response.createdAt), 'MMM d, yyyy h:mm a')}
                 </td>
-                {form.fields.map(field => (
-                  <td key={field.id} className="p-2 text-sm">
-                    {response.fields.find(f => f.fieldId === field.id)?.value || 'No response'}
-                  </td>
-                ))}
                 <td className="p-2">
-                  <Button variant="ghost" size="sm" asChild disabled={isDeleting}>
-                    <Link href={`/admin/forms/${form.id}/responses/${response.id}/edit`}>
-                      <Pencil className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" asChild disabled={isDeleting}>
+                      <Link href={`/forms/${response.form.id}/responses/${response.id}/edit`}>
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        setSelectedResponses(new Set([response.id]));
+                        setShowDeleteDialog(true);
+                      }}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

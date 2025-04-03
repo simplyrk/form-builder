@@ -92,4 +92,4 @@ src/
 
 ## License
 
-MIT License
+AGPL-3.0

@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { Form } from '@/types/form';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye, BarChart2, Trash2 } from 'lucide-react';
+import { Pencil, Eye, BarChart2, Trash2, Copy, Check } from 'lucide-react';
 import { toggleFormPublish, deleteForm } from '@/app/actions/forms';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface AdminPageClientProps {
   forms: Form[];
@@ -15,13 +16,14 @@ interface AdminPageClientProps {
 export default function AdminPageClient({ forms: initialForms }: AdminPageClientProps) {
   const [forms, setForms] = useState(initialForms);
   const [loading, setLoading] = useState<string | null>(null);
+  const [copiedFormId, setCopiedFormId] = useState<string | null>(null);
 
   const handlePublish = async (formId: string) => {
     setLoading(formId);
     try {
       const updatedForm = await toggleFormPublish(formId);
       setForms(forms.map(form => 
-        form.id === formId ? updatedForm : form
+        form.id === formId ? { ...form, published: updatedForm.published } : form
       ));
     } catch (error) {
       console.error('Failed to toggle form publish status:', error);
@@ -42,6 +44,38 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
     } finally {
       setLoading(null);
     }
+  };
+
+  const handleCopyUrl = (formId: string) => {
+    const url = `${window.location.origin}/forms/${formId}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        // Set the copied form ID to show visual feedback
+        setCopiedFormId(formId);
+        
+        // Show a more visible toast
+        toast.success('Survey URL copied to clipboard', {
+          duration: 2000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: 'white',
+            fontWeight: 'bold',
+          },
+        });
+        
+        // Reset the copied state after 2 seconds
+        setTimeout(() => {
+          setCopiedFormId(null);
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error('Failed to copy URL:', err);
+        toast.error('Failed to copy URL', {
+          duration: 3000,
+          position: 'top-center',
+        });
+      });
   };
 
   return (
@@ -82,6 +116,24 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
                   >
                     {form.published ? 'Draft' : 'Publish'}
                   </Button>
+                  <Button
+                    variant={copiedFormId === form.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleCopyUrl(form.id)}
+                    disabled={!form.published}
+                    title={form.published ? "Copy survey URL" : "Publish form to get URL"}
+                    className={cn(
+                      "transition-all duration-200",
+                      copiedFormId === form.id && "bg-green-500 hover:bg-green-600"
+                    )}
+                  >
+                    {copiedFormId === form.id ? (
+                      <Check className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-2" />
+                    )}
+                    {copiedFormId === form.id ? "Copied!" : "Copy URL"}
+                  </Button>
                   <Link href={`/forms/${form.id}`}>
                     <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-2" />
@@ -101,7 +153,7 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
                     </Button>
                   </Link>
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleDelete(form.id)}
                     disabled={loading === form.id}
@@ -110,6 +162,18 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
                     Delete
                   </Button>
                 </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Created: {new Date(form.createdAt).toISOString().split('T')[0]}</span>
+                <span>•</span>
+                <span>Fields: {form.fields.length}</span>
+                <span>•</span>
+                <span className={cn(
+                  "font-medium",
+                  form.published ? "text-green-500" : "text-amber-500"
+                )}>
+                  {form.published ? "Published" : "Draft"}
+                </span>
               </div>
             </div>
           ))}

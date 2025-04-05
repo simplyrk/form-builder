@@ -166,9 +166,17 @@ export async function deleteResponses(responseIds: string[]) {
     throw new Error('Unauthorized to delete responses from some forms');
   }
 
-  // Delete the responses
-  await prisma.response.deleteMany({
-    where: { id: { in: responseIds } },
+  // Delete everything in the correct order using a transaction
+  await prisma.$transaction(async (tx) => {
+    // First delete the response fields
+    await tx.responseField.deleteMany({
+      where: { responseId: { in: responseIds } },
+    });
+
+    // Then delete the responses
+    await tx.response.deleteMany({
+      where: { id: { in: responseIds } },
+    });
   });
 
   return { success: true };

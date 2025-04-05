@@ -1,3 +1,9 @@
+/**
+ * User Responses Table Component
+ * Displays a user's form responses in a table format with options to view, edit, and delete responses
+ * @module user-responses-table
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -19,16 +25,31 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/components/ui/use-toast';
 
+/**
+ * Props for the UserResponsesTable component
+ */
 interface UserResponsesTableProps {
+  /** Array of responses with their associated forms */
   responses: Array<Response & { form: Form }>;
+  /** Callback function when responses are deleted */
   onDelete: (responseIds: string[]) => Promise<{ success: boolean; error?: string }>;
 }
 
+/**
+ * Gets a shortened version of an ID for display
+ * @param {string} id - The full ID to shorten
+ * @returns {string} The first 8 characters of the ID in uppercase
+ */
 function getShortId(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
-// Helper function to render field value
+/**
+ * Renders the value of a response field, handling different field types
+ * @param {any} field - The field definition
+ * @param {any} responseField - The response field value
+ * @returns {JSX.Element | string} The rendered field value
+ */
 function renderFieldValue(field: any, responseField: any) {
   if (!responseField) return 'No response';
   
@@ -75,6 +96,12 @@ function renderFieldValue(field: any, responseField: any) {
   return responseField.value;
 }
 
+/**
+ * UserResponsesTable Component
+ * Displays a table of a user's form responses with options to view, edit, and delete responses
+ * @param {UserResponsesTableProps} props - The component props
+ * @returns {JSX.Element} The rendered user responses table
+ */
 export function UserResponsesTable({ responses, onDelete }: UserResponsesTableProps) {
   const { toast } = useToast();
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());

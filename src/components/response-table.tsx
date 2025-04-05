@@ -1,3 +1,9 @@
+/**
+ * Response Table Component
+ * Displays form responses in a table format with options to view, edit, and delete responses
+ * @module response-table
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -18,19 +24,37 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+/**
+ * Props for the ResponseTable component
+ */
 interface ResponseTableProps {
+  /** The form containing the responses */
   form: Form;
+  /** Array of responses to display */
   responses: Response[];
+  /** Map of user IDs to user names */
   userMap: Map<string, string>;
+  /** Callback function when responses are deleted */
   onDelete: (responseIds: string[]) => void;
+  /** Whether responses are currently being deleted */
   isDeleting?: boolean;
 }
 
+/**
+ * Gets a shortened version of an ID for display
+ * @param {string} id - The full ID to shorten
+ * @returns {string} The first 8 characters of the ID in uppercase
+ */
 function getShortId(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
-// Helper function to render field value
+/**
+ * Renders the value of a response field, handling different field types
+ * @param {any} field - The field definition
+ * @param {any} responseField - The response field value
+ * @returns {JSX.Element | string} The rendered field value
+ */
 function renderFieldValue(field: any, responseField: any) {
   if (!responseField) return 'No response';
   
@@ -77,6 +101,12 @@ function renderFieldValue(field: any, responseField: any) {
   return responseField.value;
 }
 
+/**
+ * ResponseTable Component
+ * Displays a table of form responses with options to view, edit, and delete responses
+ * @param {ResponseTableProps} props - The component props
+ * @returns {JSX.Element} The rendered response table
+ */
 export function ResponseTable({ form, responses, userMap, onDelete, isDeleting = false }: ResponseTableProps) {
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

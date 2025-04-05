@@ -1,3 +1,9 @@
+/**
+ * Form Builder Server Actions
+ * This file contains all server-side actions for form management and response handling.
+ * @module forms
+ */
+
 'use server';
 
 import { prisma } from '@/lib/prisma';
@@ -6,6 +12,12 @@ import { revalidatePath } from 'next/cache';
 import type { Form, FormInput, FieldInput } from '@/types/form';
 import { handleFileUpload } from '@/lib/file-upload';
 
+/**
+ * Creates a new form with the provided data
+ * @param {FormInput} data - The form data including title, description, and fields
+ * @returns {Promise<Form>} The created form
+ * @throws {Error} If user is not authenticated
+ */
 export async function createForm(data: FormInput) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
@@ -34,6 +46,13 @@ export async function createForm(data: FormInput) {
   return form as Form;
 }
 
+/**
+ * Updates an existing form with new data
+ * @param {string} id - The ID of the form to update
+ * @param {FormInput} data - The new form data
+ * @returns {Promise<Form>} The updated form
+ * @throws {Error} If user is not authenticated or not authorized
+ */
 export async function updateForm(id: string, data: FormInput) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
@@ -78,6 +97,12 @@ export async function updateForm(id: string, data: FormInput) {
   return updatedForm as Form;
 }
 
+/**
+ * Toggles the published state of a form
+ * @param {string} formId - The ID of the form to toggle
+ * @returns {Promise<Form>} The updated form
+ * @throws {Error} If user is not authenticated or not authorized
+ */
 export async function toggleFormPublish(formId: string) {
   const { userId } = await auth();
   if (!userId) {
@@ -98,6 +123,12 @@ export async function toggleFormPublish(formId: string) {
   });
 }
 
+/**
+ * Deletes a form and all its associated data
+ * @param {string} formId - The ID of the form to delete
+ * @returns {Promise<void>}
+ * @throws {Error} If user is not authenticated or not authorized
+ */
 export async function deleteForm(formId: string) {
   const { userId } = await auth();
   if (!userId) {
@@ -143,6 +174,12 @@ export async function deleteForm(formId: string) {
   });
 }
 
+/**
+ * Deletes multiple form responses
+ * @param {string[]} responseIds - Array of response IDs to delete
+ * @returns {Promise<{success: boolean}>}
+ * @throws {Error} If user is not authenticated or not authorized
+ */
 export async function deleteResponses(responseIds: string[]) {
   const { userId } = await auth();
   if (!userId) {
@@ -183,6 +220,13 @@ export async function deleteResponses(responseIds: string[]) {
   return { success: true };
 }
 
+/**
+ * Updates a form response with new field values
+ * @param {string} responseId - The ID of the response to update
+ * @param {Record<string, any> | FormData} fieldValues - The new field values
+ * @returns {Promise<Response>} The updated response
+ * @throws {Error} If user is not authenticated or not authorized
+ */
 export async function updateResponse(responseId: string, fieldValues: Record<string, any> | FormData) {
   const { userId } = await auth();
   if (!userId) {

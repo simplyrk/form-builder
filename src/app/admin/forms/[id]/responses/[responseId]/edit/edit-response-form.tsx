@@ -1,3 +1,9 @@
+/**
+ * Admin Edit Response Form Component
+ * Allows administrators to edit any form response, including file uploads
+ * @module admin-edit-response-form
+ */
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -13,11 +19,22 @@ import { FileIcon, ImageIcon, Trash2, Plus } from 'lucide-react';
 import type { Form, Response } from '@/types/form';
 import { updateResponse } from '@/app/actions/forms';
 
+/**
+ * Props for the AdminEditResponseForm component
+ */
 interface EditResponseFormProps {
+  /** The form containing the response */
   form: Form;
+  /** The response to edit */
   response: Response;
 }
 
+/**
+ * AdminEditResponseForm Component
+ * Provides a form interface for administrators to edit any form response, including file uploads
+ * @param {EditResponseFormProps} props - The component props
+ * @returns {JSX.Element} The rendered admin edit response form
+ */
 export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -68,6 +85,10 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     return fields;
   });
 
+  /**
+   * Handles form submission, including file uploads and deletions
+   * @param {React.FormEvent} e - The form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -130,25 +151,38 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     }));
   };
   
-  const handleFileAction = useCallback((fieldId: string, action: 'delete' | 'upload', file?: File) => {
+  /**
+   * Handles file upload for a specific field
+   * @param {string} fieldId - The ID of the field to upload a file for
+   * @param {File} file - The file to upload
+   */
+  const handleFileUpload = useCallback((fieldId: string, file: File) => {
     setFileFields(prev => {
       const update = { ...prev };
       
-      if (action === 'delete') {
-        // Mark existing file for deletion
-        update[fieldId] = {
-          ...update[fieldId],
-          deleteExisting: true,
-          file: null
-        };
-      } else if (action === 'upload' && file) {
-        // Add new file and clear deletion flag
-        update[fieldId] = {
-          ...update[fieldId],
-          file,
-          deleteExisting: false
-        };
-      }
+      update[fieldId] = {
+        ...update[fieldId],
+        file,
+        deleteExisting: false
+      };
+      
+      return update;
+    });
+  }, []);
+
+  /**
+   * Handles file deletion for a specific field
+   * @param {string} fieldId - The ID of the field to delete the file from
+   */
+  const handleFileDelete = useCallback((fieldId: string) => {
+    setFileFields(prev => {
+      const update = { ...prev };
+      
+      update[fieldId] = {
+        ...update[fieldId],
+        deleteExisting: true,
+        file: null
+      };
       
       return update;
     });
@@ -219,7 +253,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleFileAction(field.id, 'delete')}
+                        onClick={() => handleFileDelete(field.id)}
                         className="h-8 px-2 text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -236,7 +270,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleFileAction(field.id, 'delete')}
+                        onClick={() => handleFileDelete(field.id)}
                         className="h-8 px-2 text-destructive hover:text-destructive ml-auto"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -253,7 +287,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) handleFileAction(field.id, 'upload', file);
+                          if (file) handleFileUpload(field.id, file);
                         }}
                         required={isRequired}
                       />

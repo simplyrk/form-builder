@@ -35,7 +35,7 @@ export default async function EditFormPage({ params }: EditFormPageProps) {
         <p className="text-muted-foreground">{form.title}</p>
       </div>
 
-      <FormBuilder initialData={form} />
+      <FormBuilder form={form} />
     </div>
   );
 } 

@@ -188,10 +188,23 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
                           </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Type
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Field Label
+                              </label>
+                              <Input
+                                value={field.label}
+                                onChange={(e) =>
+                                  handleFieldChange(index, { label: e.target.value })
+                                }
+                                placeholder="Enter field label"
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Field Type
                               </label>
                               <select
                                 className="w-full rounded-md border border-input bg-background px-3 py-2"
@@ -209,25 +222,25 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
                                 <option value="file">File</option>
                               </select>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={`required-${index}`}
-                                checked={field.required}
-                                onChange={(e) =>
-                                  handleFieldChange(index, {
-                                    required: e.target.checked,
-                                  })
-                                }
-                                disabled={isSubmitting}
-                              />
-                              <label
-                                htmlFor={`required-${index}`}
-                                className="text-sm font-medium"
-                              >
-                                Required
-                              </label>
-                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2 pt-2">
+                            <input
+                              type="checkbox"
+                              id={`required-${index}`}
+                              checked={field.required}
+                              onChange={(e) =>
+                                handleFieldChange(index, {
+                                  required: e.target.checked,
+                                })
+                              }
+                              disabled={isSubmitting}
+                            />
+                            <label
+                              htmlFor={`required-${index}`}
+                              className="text-sm font-medium"
+                            >
+                              Required
+                            </label>
                           </div>
                         </CardContent>
                       </Card>

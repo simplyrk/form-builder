@@ -49,9 +49,13 @@ export interface Response {
 
 export interface ResponseField {
   id: string;
-  responseId: string;
-  response: Response;
   fieldId: string;
-  field: Field;
-  value: string;
+  responseId: string;
+  value: string | boolean | string[];
+  fileName?: string;
+  filePath?: string;
+  fileSize?: number;
+  mimeType?: string;
+  createdAt: Date;
+  updatedAt: Date;
 } 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, FileIcon, ImageIcon, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import type { Form, Response } from '@/types/form';
 import {
@@ -28,6 +28,53 @@ interface ResponseTableProps {
 
 function getShortId(id: string) {
   return id.slice(0, 8).toUpperCase();
+}
+
+// Helper function to render field value
+function renderFieldValue(field: any, responseField: any) {
+  if (!responseField) return 'No response';
+  
+  // Check if this is a file upload
+  if (responseField.filePath) {
+    const isImage = responseField.mimeType?.startsWith('image/');
+    const fileName = responseField.fileName || 'Download file';
+    
+    // Ensure the file path starts with a slash
+    let filePath = responseField.filePath;
+    // If filePath doesn't start with a slash, add it
+    if (!filePath.startsWith('/')) {
+      filePath = `/${filePath}`;
+    }
+    
+    // If filePath is just a filename without a path, assume it's in uploads
+    if (!filePath.includes('/uploads/') && !filePath.startsWith('/uploads/')) {
+      filePath = `/uploads/${filePath.replace(/^\//, '')}`;
+    }
+    
+    console.log('Rendering file link with path:', filePath);
+    
+    return (
+      <div className="flex items-center space-x-2">
+        {isImage ? (
+          <ImageIcon className="h-4 w-4 text-blue-500" />
+        ) : (
+          <FileIcon className="h-4 w-4 text-gray-500" />
+        )}
+        <a 
+          href={filePath} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline flex items-center"
+        >
+          {fileName}
+          <ExternalLink className="h-3 w-3 ml-1" />
+        </a>
+      </div>
+    );
+  }
+  
+  // Regular text value
+  return responseField.value;
 }
 
 export function ResponseTable({ form, responses, userMap, onDelete, isDeleting = false }: ResponseTableProps) {
@@ -143,11 +190,16 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
                 <td className="p-2 text-sm">
                   {format(new Date(response.createdAt), 'MMM d, yyyy h:mm a')}
                 </td>
-                {form.fields.map(field => (
-                  <td key={field.id} className="p-2 text-sm">
-                    {response.fields.find(f => f.fieldId === field.id)?.value || 'No response'}
-                  </td>
-                ))}
+                {form.fields.map(field => {
+                  const fieldResponse = response.fields.find(
+                    (f) => f.fieldId === field.id
+                  );
+                  return (
+                    <td key={field.id} className="p-2 text-sm">
+                      {renderFieldValue(field, fieldResponse)}
+                    </td>
+                  );
+                })}
                 <td className="p-2">
                   <Button variant="ghost" size="sm" asChild disabled={isDeleting}>
                     <Link href={`/admin/forms/${form.id}/responses/${response.id}/edit`}>

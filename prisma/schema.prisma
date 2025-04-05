@@ -53,4 +53,8 @@ model ResponseField {
   fieldId    String
   field      Field    @relation(fields: [fieldId], references: [id])
   value      String
+  fileName   String?  // Original filename
+  filePath   String?  // Path to the stored file
+  fileSize   Int?     // File size in bytes
+  mimeType   String?  // MIME type of the file
 }

@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 80",
+    "custom-server": "node server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop form-builder",
+    "pm2:restart": "pm2 restart form-builder",
+    "pm2:logs": "pm2 logs form-builder",
+    "pm2:monit": "pm2 monit",
     "lint": "next lint"
   },
   "dependencies": {
@@ -31,6 +37,7 @@
     "next": "15.2.4",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
+    "pm2": "^5.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",

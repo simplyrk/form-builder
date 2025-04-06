@@ -21,7 +21,7 @@ A modern, user-friendly form builder application built with Next.js, TypeScript,
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: Clerk
 - **File Storage**: Local file system with proper path handling
-- **Deployment**: Vercel
+- **Deployment**: Vercel, PM2 (for custom server deployments)
 
 ## Getting Started
 
@@ -67,6 +67,108 @@ npx prisma db push
 5. Start the development server:
 ```bash
 npm run dev
+```
+
+## Production Deployment
+
+### Building for Production
+
+1. Build the application:
+```bash
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm run start
+```
+
+The application will run on port 80 by default. If you need to use a different port, you can specify it with the `-p` flag:
+```bash
+npm run start -p 3000
+```
+
+### Deployment with PM2
+
+PM2 is a production process manager for Node.js applications with a built-in load balancer. It allows you to keep applications online 24/7 and reload them without downtime.
+
+1. Install PM2 globally:
+```bash
+npm install -g pm2
+```
+
+2. Create a PM2 ecosystem file (ecosystem.config.js):
+```bash
+touch ecosystem.config.js
+```
+
+3. Add the following configuration to ecosystem.config.js:
+```javascript
+module.exports = {
+  apps: [
+    {
+      name: 'form-builder',
+      script: 'server.js',
+      instances: 'max', // Use all available CPU cores
+      exec_mode: 'cluster',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 80
+      }
+    }
+  ]
+};
+```
+
+4. Start the application with PM2:
+```bash
+pm2 start ecosystem.config.js
+```
+
+5. Other useful PM2 commands:
+```bash
+# Monitor your application
+pm2 monit
+
+# View logs
+pm2 logs
+
+# Restart application
+pm2 restart form-builder
+
+# Stop application
+pm2 stop form-builder
+
+# Delete application from PM2
+pm2 delete form-builder
+
+# Save the current process list to start on system reboot
+pm2 save
+
+# Set up PM2 to start on system boot
+pm2 startup
+```
+
+### Using the Custom Server
+
+The project includes a custom server.js file that allows for more advanced configurations. To use it:
+
+1. Build the application:
+```bash
+npm run build
+```
+
+2. Start the custom server:
+```bash
+npm run custom-server
+```
+
+Or with PM2:
+```bash
+pm2 start server.js --name "form-builder"
 ```
 
 ## Project Structure
@@ -166,3 +268,4 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 - [Clerk](https://clerk.com/)
 - [shadcn/ui](https://ui.shadcn.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
+- [PM2](https://pm2.keymetrics.io/)

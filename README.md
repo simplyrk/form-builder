@@ -19,7 +19,7 @@ A modern, user-friendly form builder application built with Next.js, TypeScript,
 - **Frontend**: Next.js 14, React, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Clerk
+- **Authentication**: Clerk (using @clerk/nextjs and @clerk/backend)
 - **File Storage**: Local file system with proper path handling
 - **Deployment**: Vercel, PM2 (for custom server deployments)
 
@@ -68,6 +68,15 @@ npx prisma db push
 ```bash
 npm run dev
 ```
+
+## Clerk Authentication
+
+This project uses Clerk for authentication. We're using the following Clerk packages:
+
+- `@clerk/nextjs`: For Next.js integration
+- `@clerk/backend`: For server-side operations
+
+> **Note**: The deprecated `@clerk/clerk-sdk-node` package has been replaced with `@clerk/backend` as per Clerk's recommendations. This change was made to address the deprecation notice issued on October 8, 2024.
 
 ## Production Deployment
 

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { createClerkClient } from '@clerk/backend';
 import type { Form, Response } from '@/types/form';
 import { ResponsesClient } from './responses-client';
 
@@ -49,7 +49,8 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
   const users = await Promise.all(
     userIds.map(async (id: string) => {
       try {
-        const user = await clerkClient.users.getUser(id);
+        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+        const user = await clerk.users.getUser(id);
         return {
           id,
           name: `${user.firstName} ${user.lastName}`.trim() || 'Anonymous User',

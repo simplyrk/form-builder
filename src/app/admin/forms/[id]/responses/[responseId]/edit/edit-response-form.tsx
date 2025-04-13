@@ -76,8 +76,6 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
         }
       }
       
-      console.log('Submitting form data:', Object.fromEntries(submitFormData.entries()));
-      
       const updateResponse = await fetch(`/api/forms/${form.id}/responses/${initialResponse.id}`, {
         method: 'PUT',
         body: submitFormData,
@@ -85,7 +83,6 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
 
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json().catch(() => ({}));
-        console.error('Update failed with status:', updateResponse.status, 'Error:', errorData);
         throw new Error(`Failed to update response: ${updateResponse.status} ${updateResponse.statusText}`);
       }
 

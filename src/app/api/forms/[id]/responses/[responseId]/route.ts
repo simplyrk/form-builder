@@ -24,14 +24,6 @@ export async function PUT(
 
     // Get the form data from the request
     const formData = await request.formData();
-    
-    console.log('Updating response:', params.responseId, 'for form:', params.id);
-    console.log('Form data entries:', Array.from(formData.entries()).map(([key, value]) => {
-      if (value instanceof File) {
-        return [key, { name: value.name, size: value.size, type: value.type }];
-      }
-      return [key, value];
-    }));
 
     // Update the response
     const result = await updateResponse(params.id, params.responseId, formData);

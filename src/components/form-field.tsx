@@ -33,8 +33,6 @@ interface FormFieldProps {
 }
 
 export function FormField({ field, value, onChange, disabled = false }: FormFieldProps) {
-  console.log('Rendering field:', field);
-
   const renderField = () => {
     switch (field.type) {
       case 'text':

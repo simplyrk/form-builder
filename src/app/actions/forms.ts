@@ -267,8 +267,6 @@ export async function deleteResponses(formId: string, responseIds: string[]) {
       }
     });
 
-    console.log(`Deleted ${deleteResult.count} responses`);
-
     // Revalidate all relevant paths
     revalidatePath('/');
     revalidatePath('/admin');
@@ -322,8 +320,6 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
 
 export async function updateResponse(formId: string, responseId: string, data: FormData) {
   try {
-    console.log('Updating response:', responseId, 'for form:', formId);
-    
     const response = await prisma.response.findUnique({
       where: { id: responseId },
       include: { 
@@ -359,7 +355,6 @@ export async function updateResponse(formId: string, responseId: string, data: F
     }
 
     if (fileDeletions.length > 0) {
-      console.log('Deleting files for fields:', fileDeletions);
       await prisma.responseField.updateMany({
         where: {
           responseId,
@@ -383,16 +378,11 @@ export async function updateResponse(formId: string, responseId: string, data: F
       if (key.endsWith('_delete')) continue;
       
       const field = fields.find(f => f.id === key);
-      if (!field) {
-        console.log('Field not found:', key);
-        continue;
-      }
+      if (!field) continue;
 
       // Handle file uploads
       if (field.type === 'file' && value instanceof File) {
-        console.log('Processing file upload for field:', key, 'File name:', value.name);
         const uploadResult = await handleFileUpload(value);
-        console.log('File upload result:', uploadResult);
         updatedFields.push({
           fieldId: key,
           value: uploadResult.path,
@@ -404,10 +394,8 @@ export async function updateResponse(formId: string, responseId: string, data: F
       } else if (key.endsWith('_fileName') || key.endsWith('_filePath') || 
                  key.endsWith('_fileSize') || key.endsWith('_mimeType')) {
         // Skip these as they're handled with the main field
-        console.log('Skipping metadata field:', key);
       } else {
         // Handle non-file fields
-        console.log('Updating field:', key, 'with value:', value);
         updatedFields.push({
           fieldId: key,
           value: value.toString()
@@ -418,7 +406,6 @@ export async function updateResponse(formId: string, responseId: string, data: F
     // Update remaining fields one by one
     if (updatedFields.length > 0) {
       for (const field of updatedFields) {
-        console.log('Updating field in database:', field.fieldId);
         await prisma.responseField.updateMany({
           where: { 
             responseId,
@@ -446,7 +433,10 @@ export async function updateResponse(formId: string, responseId: string, data: F
     return { success: true };
   } catch (error) {
     console.error('Error updating response:', error);
-    return { success: false, error: 'Failed to update response' };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to update response' 
+    };
   }
 }
 

@@ -6,6 +6,7 @@ import { submitForm } from '@/app/actions/responses';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
+import { FormsLayout } from '@/components/forms-layout';
 
 interface FormPageClientProps {
   form: Form;
@@ -55,18 +56,20 @@ export default function FormPageClient({ form, userId }: FormPageClientProps) {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-foreground mb-4">{form.title}</h1>
-        {form.description && (
-          <p className="text-muted-foreground mb-8">{form.description}</p>
-        )}
-        <FormViewer
-          form={form}
-          initialData={{}}
-          onSubmit={handleSubmit}
-        />
+    <FormsLayout>
+      <div className="p-6">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-foreground mb-4">{form.title}</h1>
+          {form.description && (
+            <p className="text-muted-foreground mb-8">{form.description}</p>
+          )}
+          <FormViewer
+            form={form}
+            initialData={{}}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
-    </div>
+    </FormsLayout>
   );
 } 

@@ -3,8 +3,15 @@ import { auth } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
 import type { Form } from '@/types/form';
 import { FormBuilder } from '@/components/form-builder';
+import { FormsLayout } from '@/components/forms-layout';
 
-export default async function EditFormPage({ params }) {
+interface EditFormPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function EditFormPage({ params }: EditFormPageProps) {
   const { userId } = await auth();
   
   const form = await prisma.form.findUnique({
@@ -23,13 +30,15 @@ export default async function EditFormPage({ params }) {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Edit Form</h1>
-        <p className="text-muted-foreground">{form.title}</p>
-      </div>
+    <FormsLayout>
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Edit Form</h1>
+          <p className="text-muted-foreground">{form.title}</p>
+        </div>
 
-      <FormBuilder form={form} />
-    </div>
+        <FormBuilder form={form} />
+      </div>
+    </FormsLayout>
   );
 } 

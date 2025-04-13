@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
 import { EditResponseForm } from './edit-response-form';
 import type { Form, Response } from '@/types/form';
+import { FormsLayout } from '@/components/forms-layout';
 
 interface EditResponsePageProps {
   params: {
@@ -48,14 +49,16 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Edit Response</h1>
-        <p className="text-muted-foreground">
-          Edit the response for form: {form.title}
-        </p>
+    <FormsLayout>
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold">Edit Response</h1>
+          <p className="text-muted-foreground">
+            Edit the response for form: {form.title}
+          </p>
+        </div>
+        <EditResponseForm form={form} response={response} />
       </div>
-      <EditResponseForm form={form} response={response} />
-    </div>
+    </FormsLayout>
   );
 } 

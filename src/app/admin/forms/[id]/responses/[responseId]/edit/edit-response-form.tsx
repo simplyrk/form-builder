@@ -21,6 +21,10 @@ import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
 
 /**
  * Props for the AdminEditResponseForm component
+ * @interface EditResponseFormProps
+ * @property {Form} form - The form containing the response
+ * @property {FormResponse} response - The response to edit
+ * @property {() => void} [onCancel] - Optional callback function to handle cancel
  */
 interface EditResponseFormProps {
   /** The form containing the response */
@@ -41,7 +45,10 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Initialize form data from response
+  /**
+   * Initialize form data from response
+   * Creates a record of field IDs to their values
+   */
   const [formData, setFormData] = useState<Record<string, string | string[] | File>>(() => {
     const initialData: Record<string, string | string[] | File> = {};
     initialResponse.fields.forEach((field: ResponseField) => {
@@ -104,6 +111,12 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
     }
   };
 
+  /**
+   * Handles file upload to the server
+   * @param {File} file - The file to upload
+   * @returns {Promise<{filePath: string, fileName: string, fileSize: string, mimeType: string}>} The uploaded file data
+   * @throws {Error} If the upload fails
+   */
   const handleFileUpload = async (file: File) => {
     try {
       const formData = new FormData();
@@ -131,6 +144,11 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
     }
   };
 
+  /**
+   * Renders the appropriate form field based on the field type
+   * @param {FormField} field - The form field to render
+   * @returns {JSX.Element | null} The rendered form field
+   */
   const renderField = (field: FormField) => {
     const value = formData[field.id];
     const isRequired = field.required;

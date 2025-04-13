@@ -4,13 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Form } from '@/types/form';
 import { FormBuilder } from '@/components/form-builder';
 
-interface EditFormPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function EditFormPage({ params }: EditFormPageProps) {
+export default async function EditFormPage({ params }) {
   const { userId } = await auth();
   
   const form = await prisma.form.findUnique({

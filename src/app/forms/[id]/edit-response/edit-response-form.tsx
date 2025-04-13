@@ -10,9 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileIcon, Trash2, Upload } from 'lucide-react';
+import { FileIcon, Trash2 } from 'lucide-react';
 import { updateResponse } from '@/app/actions/forms';
 import type { Form, Response } from '@/types/form';
+
+type FormDataValue = string | number | boolean | string[] | File | null;
 
 // Isolated File Input Component
 function FileInput({ 
@@ -50,8 +52,8 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>(() => {
-    const initialData: Record<string, any> = {};
+  const [formData, setFormData] = useState<Record<string, FormDataValue>>(() => {
+    const initialData: Record<string, FormDataValue> = {};
     response.fields.forEach((responseField) => {
       const formField = form.fields.find(f => f.id === responseField.fieldId);
       if (formField && formField.type !== 'file') {
@@ -81,28 +83,42 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     setIsSubmitting(true);
 
     try {
-      // Combine form data and file data for submission
-      const submissionData = { ...formData };
+      // Create a FormData object for submission
+      const formDataObj = new FormData();
+      
+      // Add regular form data
+      Object.entries(formData).forEach(([fieldId, value]) => {
+        if (value !== null) {
+          if (value instanceof File) {
+            formDataObj.append(fieldId, value);
+          } else if (Array.isArray(value)) {
+            formDataObj.append(fieldId, value.join(','));
+          } else {
+            formDataObj.append(fieldId, String(value));
+          }
+        }
+      });
       
       // Add file data to submission
       Object.keys(fileData).forEach(fieldId => {
         if (fileData[fieldId]) {
-          submissionData[fieldId] = fileData[fieldId];
+          formDataObj.append(fieldId, fileData[fieldId]!);
         }
       });
       
       // Add deleted files to submission
       deletedFiles.forEach(fieldId => {
-        submissionData[fieldId] = null;
+        formDataObj.append(`${fieldId}_delete`, 'true');
       });
       
-      await updateResponse(response.id, submissionData);
+      await updateResponse(form.id, response.id, formDataObj);
       toast({
         title: 'Success',
         description: 'Your response has been updated.',
       });
       router.push('/responses');
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to update response:', err);
       toast({
         title: 'Error',
         description: 'Failed to update response. Please try again.',
@@ -239,7 +255,13 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                     <FileIcon className="h-4 w-4" />
                     <span>Current file: {responseField.fileName}</span>
                     <a
-                      href={responseField.filePath}
+                      href={(() => {
+                        // Get the file path and ensure it doesn't have a leading slash
+                        const filePath = responseField.filePath || '';
+                        
+                        // Return the URL path properly formatted
+                        return `/api/files/${filePath}`;
+                      })()}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-500 hover:underline"

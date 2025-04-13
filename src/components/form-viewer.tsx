@@ -8,25 +8,36 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { submitResponse, updateResponse } from '@/app/actions/forms';
 
-interface Field {
-  id: string;
-  label: string;
-  type: string;
-  required: boolean;
-  options?: string[];
-  order: number;
-}
+type FieldValue = {
+  text: string;
+  textarea: string;
+  number: number;
+  email: string;
+  tel: string;
+  url: string;
+  select: string;
+  multiselect: string[];
+  checkbox: boolean;
+  radio: string;
+  file: File | null;
+  date: string;
+  time: string;
+  datetime: string;
+};
+
+type ApiFormData = Record<string, string | number | boolean | null>;
 
 interface FormViewerProps {
   form: Form;
-  initialData?: Record<string, any>;
-  responseId?: string; // Add responseId for editing
+  initialData?: Partial<Record<string, FieldValue[keyof FieldValue]>>;
+  responseId?: string;
+  onSubmit?: (data: Record<string, FieldValue[keyof FieldValue]>) => Promise<void>;
 }
 
-export function FormViewer({ form, initialData = {}, responseId }: FormViewerProps) {
+export function FormViewer({ form, initialData = {}, responseId, onSubmit }: FormViewerProps) {
   // Initialize form data with initialData and only update when form changes
-  const [formData, setFormData] = useState<Record<string, any>>(() => {
-    const data: Record<string, any> = {};
+  const [formData, setFormData] = useState<Record<string, FieldValue[keyof FieldValue]>>(() => {
+    const data: Record<string, FieldValue[keyof FieldValue]> = {};
     form.fields.forEach(field => {
       data[field.id] = initialData[field.id] || '';
     });
@@ -44,7 +55,7 @@ export function FormViewer({ form, initialData = {}, responseId }: FormViewerPro
     [form.fields]
   );
 
-  const handleFieldChange = useCallback((fieldId: string, value: any) => {
+  const handleFieldChange = useCallback((fieldId: string, value: FieldValue[keyof FieldValue]) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value,
@@ -53,56 +64,53 @@ export function FormViewer({ form, initialData = {}, responseId }: FormViewerPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSubmitting(true);
+    setError(null);
 
     try {
-      // Validate required fields
-      const missingFields = sortedFields
-        .filter(field => field.required)
-        .filter(field => !formData[field.id]);
-
-      if (missingFields.length > 0) {
-        const errorMessage = `Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`;
-        setError(errorMessage);
-        toast({
-          title: 'Validation Error',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (responseId) {
-        // Update existing response
-        await updateResponse(responseId, formData);
-        toast({
-          title: 'Success',
-          description: 'Response updated successfully',
-        });
+      // If an onSubmit prop is provided, use it
+      if (onSubmit) {
+        await onSubmit(formData);
       } else {
-        // Create new response
-        const result = await submitResponse(form.id, formData);
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to submit form');
+        // Convert form data to the expected format
+        const processedData: ApiFormData = {};
+        for (const [key, value] of Object.entries(formData)) {
+          if (value instanceof File) {
+            // Handle file uploads separately
+            const formDataObj = new FormData();
+            formDataObj.append('file', value);
+            // TODO: Implement file upload handling
+            processedData[key] = null;
+          } else if (Array.isArray(value)) {
+            processedData[key] = value.join(',');
+          } else if (typeof value === 'boolean') {
+            processedData[key] = value;
+          } else if (typeof value === 'number') {
+            processedData[key] = value;
+          } else {
+            processedData[key] = value?.toString() || null;
+          }
         }
+
+        if (responseId) {
+          await updateResponse(responseId, processedData);
+        } else {
+          await submitResponse(form.id, processedData);
+        }
+
         toast({
           title: 'Success',
-          description: 'Form submitted successfully',
+          description: responseId ? 'Response updated successfully' : 'Response submitted successfully',
         });
       }
 
-      // Redirect to home page after a short delay
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
-    } catch (error) {
-      console.error('Form submission error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to submit form. Please try again.';
-      setError(errorMessage);
+      router.refresh();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setError('Failed to submit the form. Please try again.');
       toast({
-        title: 'Error',
-        description: errorMessage,
+        title: 'Submission Error',
+        description: 'Failed to submit the form. Please try again.',
         variant: 'destructive',
       });
     } finally {

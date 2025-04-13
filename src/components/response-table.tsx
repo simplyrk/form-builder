@@ -10,9 +10,9 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Pencil, FileIcon, ImageIcon, ExternalLink } from 'lucide-react';
+import { Pencil, FileIcon, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { Form, Response } from '@/types/form';
+import type { Form, Response, Field, ResponseField } from '@/types/form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,11 +51,11 @@ function getShortId(id: string) {
 
 /**
  * Renders the value of a response field, handling different field types
- * @param {any} field - The field definition
- * @param {any} responseField - The response field value
+ * @param {Field} field - The field definition
+ * @param {ResponseField} responseField - The response field value
  * @returns {JSX.Element | string} The rendered field value
  */
-function renderFieldValue(field: any, responseField: any) {
+function renderFieldValue(field: Field, responseField: ResponseField | undefined) {
   if (!responseField) return 'No response';
   
   // Check if this is a file upload
@@ -69,36 +69,39 @@ function renderFieldValue(field: any, responseField: any) {
     if (!filePath.startsWith('/')) {
       filePath = `/${filePath}`;
     }
-    
-    // If filePath is just a filename without a path, assume it's in uploads
-    if (!filePath.includes('/uploads/') && !filePath.startsWith('/uploads/')) {
-      filePath = `/uploads/${filePath.replace(/^\//, '')}`;
-    }
-    
-    console.log('Rendering file link with path:', filePath);
-    
+
     return (
       <div className="flex items-center space-x-2">
         {isImage ? (
-          <ImageIcon className="h-4 w-4 text-blue-500" />
+          <ImageIcon className="h-4 w-4" />
         ) : (
-          <FileIcon className="h-4 w-4 text-gray-500" />
+          <FileIcon className="h-4 w-4" />
         )}
-        <a 
-          href={filePath} 
-          target="_blank" 
+        <a
+          href={filePath}
+          target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-500 hover:underline flex items-center"
+          className="text-blue-600 hover:underline"
         >
           {fileName}
-          <ExternalLink className="h-3 w-3 ml-1" />
         </a>
       </div>
     );
   }
-  
-  // Regular text value
-  return responseField.value;
+
+  // Handle different field types
+  switch (field.type) {
+    case 'checkbox':
+      return responseField.value === 'true' ? 'Yes' : 'No';
+    case 'multiselect':
+      return typeof responseField.value === 'string' 
+        ? responseField.value.split(',').join(', ')
+        : Array.isArray(responseField.value)
+        ? responseField.value.join(', ')
+        : responseField.value;
+    default:
+      return responseField.value;
+  }
 }
 
 /**

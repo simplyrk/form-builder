@@ -16,8 +16,22 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { FileIcon, ImageIcon, Trash2, Plus } from 'lucide-react';
-import type { Form, Response } from '@/types/form';
+import type { Form, Response, ResponseField } from '@/types/form';
 import { updateResponse } from '@/app/actions/forms';
+
+// Remove unused FileUploadResponse type
+type FormDataValue = string | number | boolean | string[] | File | null;
+
+type FileFieldState = {
+  id: string;
+  file: File | null;
+  deleteExisting: boolean;
+  currentFile?: {
+    name: string;
+    path: string;
+    mimeType?: string;
+  };
+};
 
 /**
  * Props for the EditResponseForm component
@@ -39,11 +53,9 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Initialize form data from response
-  const [formData, setFormData] = useState<Record<string, any>>(() => {
-    const initialData: Record<string, any> = {};
-    response.fields.forEach((responseField) => {
+  const [formData, setFormData] = useState<Record<string, FormDataValue>>(() => {
+    const initialData: Record<string, FormDataValue> = {};
+    response.fields.forEach((responseField: ResponseField) => {
       const formField = form.fields.find(f => f.id === responseField.fieldId);
       if (formField && formField.type !== 'file') {
         initialData[responseField.fieldId] = responseField.value;
@@ -51,24 +63,11 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     });
     return initialData;
   });
-  
-  // Track file uploads and deletions separately
-  const [fileFields, setFileFields] = useState<Record<string, {
-    id: string;
-    file: File | null;
-    deleteExisting: boolean;
-    currentFile?: {
-      name: string;
-      path: string;
-      mimeType?: string;
-    };
-  }>>(() => {
-    const fields: Record<string, any> = {};
-    
-    // Initialize file fields from response
+  const [fileFields, setFileFields] = useState<Record<string, FileFieldState>>(() => {
+    const fields: Record<string, FileFieldState> = {};
     form.fields.forEach(field => {
       if (field.type === 'file') {
-        const responseField = response.fields.find(rf => rf.fieldId === field.id);
+        const responseField = response.fields.find((rf: ResponseField) => rf.fieldId === field.id);
         fields[field.id] = {
           id: field.id,
           file: null,
@@ -76,12 +75,11 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
           currentFile: responseField?.filePath ? {
             name: responseField.fileName || 'File',
             path: responseField.filePath,
-            mimeType: responseField.mimeType
+            mimeType: responseField.mimeType || undefined
           } : undefined
         };
       }
     });
-    
     return fields;
   });
 
@@ -94,49 +92,47 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     setIsSubmitting(true);
 
     try {
-      // Create FormData for submission
       const data = new FormData();
       
       // Add regular form fields
       Object.entries(formData).forEach(([fieldId, value]) => {
-        if (typeof value === 'string' || typeof value === 'boolean' || Array.isArray(value)) {
+        if (value instanceof File) {
+          data.append(fieldId, value);
+        } else if (Array.isArray(value)) {
+          data.append(fieldId, value.join(','));
+        } else if (value !== null) {
           data.append(fieldId, String(value));
         }
       });
-      
-      // Add file information
-      Object.values(fileFields).forEach(fieldInfo => {
-        // If there's a new file, add it
+
+      // Add file fields information
+      Object.entries(fileFields).forEach(([fieldId, fieldInfo]) => {
         if (fieldInfo.file) {
-          console.log('Adding file for field:', fieldInfo.id, fieldInfo.file.name);
-          data.append(fieldInfo.id, fieldInfo.file);
-        }
-        // If deleting existing file without replacement
-        else if (fieldInfo.deleteExisting) {
-          console.log('Marking file for deletion:', fieldInfo.id);
-          data.append(`${fieldInfo.id}_delete`, 'true');
-        } else if (fieldInfo.currentFile) {
-          // Ensure we don't lose existing file information
-          console.log('Preserving current file:', fieldInfo.id, fieldInfo.currentFile.path);
+          // Make sure we're appending the actual File object
+          data.append(fieldId, fieldInfo.file);
+        } else if (fieldInfo.deleteExisting) {
+          data.append(`${fieldId}_delete`, 'true');
         }
       });
+
+      console.log('Submitting form with files:', Object.entries(fileFields).filter(([_, info]) => info.file));
       
-      const result = await updateResponse(response.id, data);
+      const result = await updateResponse(form.id, response.id, data);
       if (result.success) {
         toast({
           title: 'Success',
           description: 'Response updated successfully',
         });
-        router.push('/');
-        router.refresh(); // Force a refresh to ensure latest data is shown
+        router.back();
+        router.refresh();
       } else {
-        throw new Error('Failed to update response');
+        throw new Error(result.error || 'Failed to update response');
       }
-    } catch (error) {
-      console.error('Update error:', error);
+    } catch (err) {
+      console.error('Update error:', err);
       toast({
         title: 'Error',
-        description: 'Failed to update response',
+        description: err instanceof Error ? err.message : 'Failed to update response',
         variant: 'destructive',
       });
     } finally {
@@ -144,7 +140,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     }
   };
 
-  const handleFieldChange = (fieldId: string, value: string | boolean | string[]) => {
+  const handleFieldChange = (fieldId: string, value: FormDataValue) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value,
@@ -156,19 +152,34 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
    * @param {string} fieldId - The ID of the field to upload a file for
    * @param {File} file - The file to upload
    */
-  const handleFileUpload = useCallback((fieldId: string, file: File) => {
-    setFileFields(prev => {
-      const update = { ...prev };
-      
-      update[fieldId] = {
-        ...update[fieldId],
-        file,
-        deleteExisting: false
-      };
-      
-      return update;
-    });
-  }, []);
+  const handleFileChange = (fieldId: string, file: File | null) => {
+    if (file) {
+      // Update the file in fileFields
+      setFileFields(prev => {
+        const update = { ...prev };
+        
+        update[fieldId] = {
+          ...update[fieldId],
+          file,
+          deleteExisting: false
+        };
+        
+        return update;
+      });
+    } else {
+      // Clear the file from fileFields
+      setFileFields(prev => {
+        const update = { ...prev };
+        
+        update[fieldId] = {
+          ...update[fieldId],
+          file: null
+        };
+        
+        return update;
+      });
+    }
+  };
 
   /**
    * Handles file deletion for a specific field
@@ -190,13 +201,6 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Edit Response</h1>
-        <p className="text-muted-foreground">
-          Edit your response to {form.title}
-        </p>
-      </div>
-
       <div className="space-y-6">
         {form.fields.map(field => {
           const value = formData[field.id] || '';
@@ -227,21 +231,11 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                       <span className="text-sm">{fileField.currentFile?.name}</span>
                       <a 
                         href={(() => {
-                          // Ensure the file path is properly formatted
-                          let filePath = fileField.currentFile?.path || '';
+                          // Get the file path and ensure it doesn't have a leading slash
+                          const filePath = fileField.currentFile?.path || '';
                           
-                          // If filePath doesn't start with a slash, add it
-                          if (!filePath.startsWith('/')) {
-                            filePath = `/${filePath}`;
-                          }
-                          
-                          // If filePath is just a filename without a path, assume it's in uploads
-                          if (!filePath.includes('/uploads/') && !filePath.startsWith('/uploads/')) {
-                            filePath = `/uploads/${filePath.replace(/^\//, '')}`;
-                          }
-                          
-                          console.log('View file link with path:', filePath);
-                          return filePath;
+                          // Return the URL path properly formatted
+                          return `/api/files/${filePath}`;
                         })()} 
                         target="_blank" 
                         rel="noopener noreferrer"
@@ -287,7 +281,10 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) handleFileUpload(field.id, file);
+                          if (file) {
+                            console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+                            handleFileChange(field.id, file);
+                          }
                         }}
                         required={isRequired}
                       />

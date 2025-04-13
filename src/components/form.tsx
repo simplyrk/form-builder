@@ -9,8 +9,26 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { submitResponse } from '@/app/actions/forms';
-import { FileIcon, ImageIcon, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Form, Field } from '@/types/form';
+import Image from 'next/image';
+
+type FieldValue = {
+  text: string;
+  textarea: string;
+  number: number;
+  email: string;
+  tel: string;
+  url: string;
+  select: string;
+  multiselect: string[];
+  checkbox: boolean;
+  radio: string;
+  file: File | null;
+  date: string;
+  time: string;
+  datetime: string;
+};
 
 interface FormProps {
   form: Form;
@@ -20,7 +38,7 @@ export function Form({ form }: FormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, FieldValue[keyof FieldValue]>>({});
   const [filePreviews, setFilePreviews] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +46,27 @@ export function Form({ form }: FormProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await submitResponse(form.id, formData);
+      // Convert form data to the expected format
+      const processedData: Record<string, string | number | boolean | null> = {};
+      for (const [key, value] of Object.entries(formData)) {
+        if (value instanceof File) {
+          // Handle file uploads separately
+          const formDataObj = new FormData();
+          formDataObj.append('file', value);
+          // TODO: Implement file upload handling
+          processedData[key] = null;
+        } else if (Array.isArray(value)) {
+          processedData[key] = value.join(',');
+        } else if (typeof value === 'boolean') {
+          processedData[key] = value;
+        } else if (typeof value === 'number') {
+          processedData[key] = value;
+        } else {
+          processedData[key] = value?.toString() || null;
+        }
+      }
+
+      const result = await submitResponse(form.id, processedData);
       if (result.success) {
         toast({
           title: 'Success',
@@ -43,9 +81,10 @@ export function Form({ form }: FormProps) {
         });
       }
     } catch (error) {
+      console.error('Error submitting form:', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -53,7 +92,7 @@ export function Form({ form }: FormProps) {
     }
   };
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: FieldValue[keyof FieldValue]) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value,
@@ -62,27 +101,27 @@ export function Form({ form }: FormProps) {
 
   const handleFileChange = (fieldId: string, file: File | null) => {
     if (file) {
-      handleFieldChange(fieldId, file);
-      
-      // Create a preview URL for images
-      if (file.type.startsWith('image/')) {
-        const previewUrl = URL.createObjectURL(file);
-        setFilePreviews(prev => ({
-          ...prev,
-          [fieldId]: previewUrl,
-        }));
-      }
+      setFormData(prev => ({
+        ...prev,
+        [fieldId]: file,
+      }));
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreviews(prev => ({
+        ...prev,
+        [fieldId]: previewUrl,
+      }));
     } else {
-      // Clear the file and preview
-      handleFieldChange(fieldId, null);
-      if (filePreviews[fieldId]) {
-        URL.revokeObjectURL(filePreviews[fieldId]);
-        setFilePreviews(prev => {
-          const newPreviews = { ...prev };
-          delete newPreviews[fieldId];
-          return newPreviews;
-        });
-      }
+      setFormData(prev => ({
+        ...prev,
+        [fieldId]: null,
+      }));
+      setFilePreviews(prev => {
+        const newPreviews = { ...prev };
+        delete newPreviews[fieldId];
+        return newPreviews;
+      });
     }
   };
 
@@ -90,14 +129,18 @@ export function Form({ form }: FormProps) {
     switch (field.type) {
       case 'text':
       case 'email':
+      case 'tel':
+      case 'url':
       case 'number':
       case 'date':
+      case 'time':
+      case 'datetime':
         return (
           <Input
             type={field.type}
             id={field.id}
             required={field.required}
-            onChange={e => handleFieldChange(field.id, e.target.value)}
+            onChange={e => handleFieldChange(field.id, e.target.value as FieldValue[keyof FieldValue])}
           />
         );
       case 'textarea':
@@ -105,19 +148,19 @@ export function Form({ form }: FormProps) {
           <Textarea
             id={field.id}
             required={field.required}
-            onChange={e => handleFieldChange(field.id, e.target.value)}
+            onChange={e => handleFieldChange(field.id, e.target.value as FieldValue[keyof FieldValue])}
           />
         );
       case 'checkbox':
         return (
           <Checkbox
             id={field.id}
-            onCheckedChange={checked => handleFieldChange(field.id, checked)}
+            onCheckedChange={checked => handleFieldChange(field.id, checked as FieldValue[keyof FieldValue])}
           />
         );
       case 'radio':
         return (
-          <RadioGroup onValueChange={(value: string) => handleFieldChange(field.id, value)}>
+          <RadioGroup onValueChange={(value: string) => handleFieldChange(field.id, value as FieldValue[keyof FieldValue])}>
             {field.options.map(option => (
               <div key={option} className="flex items-center space-x-2">
                 <RadioGroupItem value={option} id={`${field.id}-${option}`} />
@@ -128,7 +171,7 @@ export function Form({ form }: FormProps) {
         );
       case 'select':
         return (
-          <Select onValueChange={value => handleFieldChange(field.id, value)}>
+          <Select onValueChange={value => handleFieldChange(field.id, value as FieldValue[keyof FieldValue])}>
             <SelectTrigger>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
@@ -147,46 +190,29 @@ export function Form({ form }: FormProps) {
             <Input
               type="file"
               id={field.id}
-              required={field.required}
               onChange={e => {
                 const file = e.target.files?.[0] || null;
                 handleFileChange(field.id, file);
               }}
+              required={field.required}
             />
             {filePreviews[field.id] && (
-              <div className="relative mt-2">
-                {formData[field.id]?.type?.startsWith('image/') ? (
-                  <div className="relative">
-                    <img 
-                      src={filePreviews[field.id]} 
-                      alt="Preview" 
-                      className="max-h-40 rounded-md border"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80"
-                      onClick={() => handleFileChange(field.id, null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 p-2 border rounded-md">
-                    <FileIcon className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm truncate">{formData[field.id]?.name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full"
-                      onClick={() => handleFileChange(field.id, null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+              <div className="relative">
+                <Image
+                  src={filePreviews[field.id]}
+                  alt="Preview"
+                  width={320}
+                  height={240}
+                  className="max-w-xs rounded-lg object-contain"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => handleFileChange(field.id, null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </div>

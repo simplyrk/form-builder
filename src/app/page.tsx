@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!userId) {
-      router.push('/sign-in');
-      return;
-    }
-    fetchData();
-  }, [userId, router]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -39,7 +31,15 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      router.push('/sign-in');
+      return;
+    }
+    fetchData();
+  }, [userId, router, fetchData]);
 
   const fetchAvailableForms = async () => {
     const response = await fetch('/api/forms/available');
@@ -61,12 +61,19 @@ export default function HomePage() {
 
   const handleDelete = async (responseIds: string[]) => {
     try {
-      const result = await deleteResponses(responseIds);
+      // Get the form ID from the first response
+      const response = userResponses.find(r => r.id === responseIds[0]);
+      if (!response) {
+        return { success: false, error: 'Response not found' };
+      }
+
+      console.log(`Deleting ${responseIds.length} responses for form ${response.form.id}`);
+      const result = await deleteResponses(response.form.id, responseIds);
       if (result.success) {
         await fetchUserResponses();
         return { success: true };
       }
-      return { success: false, error: 'Failed to delete responses' };
+      return { success: false, error: result.error || 'Failed to delete responses' };
     } catch (error) {
       console.error('Error deleting responses:', error);
       return { success: false, error: 'Failed to delete responses' };
@@ -162,7 +169,7 @@ export default function HomePage() {
             {isLoading ? (
               <p className="text-muted-foreground">Loading your responses...</p>
             ) : userResponses.length === 0 ? (
-              <p className="text-muted-foreground">You haven't submitted any forms yet.</p>
+              <p className="text-muted-foreground">You haven&apos;t submitted any forms yet.</p>
             ) : (
               <UserResponsesTable responses={userResponses} onDelete={handleDelete} />
             )}

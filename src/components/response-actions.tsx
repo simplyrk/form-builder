@@ -20,10 +20,9 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface ResponseActionsProps {
   selectedResponses: string[];
-  onSelectionChange: (selected: string[]) => void;
 }
 
-export function ResponseActions({ selectedResponses, onSelectionChange }: ResponseActionsProps) {
+export function ResponseActions({ selectedResponses }: ResponseActionsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -37,7 +36,8 @@ export function ResponseActions({ selectedResponses, onSelectionChange }: Respon
         description: `${selectedResponses.length} response(s) deleted successfully.`,
       });
       router.refresh();
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting responses:', err);
       toast({
         title: 'Error',
         description: 'Failed to delete responses. Please try again.',

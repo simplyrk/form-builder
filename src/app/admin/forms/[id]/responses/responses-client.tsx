@@ -22,13 +22,12 @@ export function ResponsesClient({ form, responses, userMap }: ResponsesClientPro
   const handleDelete = async (responseIds: string[]) => {
     setIsDeleting(true);
     try {
-      const result = await deleteResponses(responseIds);
+      const result = await deleteResponses(form.id, responseIds);
       if (result.success) {
         toast({
           title: 'Success',
           description: 'Selected responses deleted successfully',
         });
-        // Use router.refresh() instead of window.location.reload()
         router.refresh();
       } else {
         toast({
@@ -38,6 +37,7 @@ export function ResponsesClient({ form, responses, userMap }: ResponsesClientPro
         });
       }
     } catch (error) {
+      console.error('Error deleting responses:', error);
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',

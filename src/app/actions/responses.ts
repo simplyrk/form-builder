@@ -2,7 +2,11 @@
 
 import { prisma } from '@/lib/prisma';
 
-export async function submitForm(formId: string, userId: string | null, data: Record<string, any>) {
+export async function submitForm(
+  formId: string,
+  userId: string | null,
+  data: Record<string, string | number | boolean | null>
+) {
   await prisma.response.create({
     data: {
       formId,
@@ -10,7 +14,7 @@ export async function submitForm(formId: string, userId: string | null, data: Re
       fields: {
         create: Object.entries(data).map(([fieldId, value]) => ({
           fieldId,
-          value: value.toString(),
+          value: value?.toString() ?? '',
         })),
       },
     },

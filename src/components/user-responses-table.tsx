@@ -7,11 +7,9 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, FileIcon, ImageIcon, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+import { Trash2, Loader2, Pencil } from 'lucide-react';
 import type { Form, Response } from '@/types/form';
 import {
   AlertDialog,
@@ -24,6 +22,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/components/ui/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Link from 'next/link';
 
 /**
  * Props for the UserResponsesTable component
@@ -35,66 +42,9 @@ interface UserResponsesTableProps {
   onDelete: (responseIds: string[]) => Promise<{ success: boolean; error?: string }>;
 }
 
-/**
- * Gets a shortened version of an ID for display
- * @param {string} id - The full ID to shorten
- * @returns {string} The first 8 characters of the ID in uppercase
- */
-function getShortId(id: string) {
-  return id.slice(0, 8).toUpperCase();
-}
-
-/**
- * Renders the value of a response field, handling different field types
- * @param {any} field - The field definition
- * @param {any} responseField - The response field value
- * @returns {JSX.Element | string} The rendered field value
- */
-function renderFieldValue(field: any, responseField: any) {
-  if (!responseField) return 'No response';
-  
-  // Check if this is a file upload
-  if (responseField.filePath) {
-    const isImage = responseField.mimeType?.startsWith('image/');
-    const fileName = responseField.fileName || 'Download file';
-    
-    // Ensure the file path starts with a slash
-    let filePath = responseField.filePath;
-    // If filePath doesn't start with a slash, add it
-    if (!filePath.startsWith('/')) {
-      filePath = `/${filePath}`;
-    }
-    
-    // If filePath is just a filename without a path, assume it's in uploads
-    if (!filePath.includes('/uploads/') && !filePath.startsWith('/uploads/')) {
-      filePath = `/uploads/${filePath.replace(/^\//, '')}`;
-    }
-    
-    console.log('Rendering file link with path:', filePath);
-    
-    return (
-      <div className="flex items-center space-x-2">
-        {isImage ? (
-          <ImageIcon className="h-4 w-4 text-blue-500" />
-        ) : (
-          <FileIcon className="h-4 w-4 text-gray-500" />
-        )}
-        <a 
-          href={filePath} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline flex items-center"
-        >
-          {fileName}
-          <ExternalLink className="h-3 w-3 ml-1" />
-        </a>
-      </div>
-    );
-  }
-  
-  // Regular text value
-  return responseField.value;
-}
+const formatId = (id: string) => {
+  return id.slice(0, 8) + '...' + id.slice(-8);
+};
 
 /**
  * UserResponsesTable Component
@@ -103,10 +53,10 @@ function renderFieldValue(field: any, responseField: any) {
  * @returns {JSX.Element} The rendered user responses table
  */
 export function UserResponsesTable({ responses, onDelete }: UserResponsesTableProps) {
-  const { toast } = useToast();
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
 
   const toggleResponse = (responseId: string) => {
     const newSelected = new Set(selectedResponses);
@@ -126,19 +76,19 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
     }
   };
 
-  const handleDelete = () => {
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDelete = async () => {
+  const handleDelete = async () => {
+    if (selectedResponses.size === 0) return;
+    
     setIsDeleting(true);
     try {
       const result = await onDelete(Array.from(selectedResponses));
       if (result.success) {
         toast({
           title: 'Success',
-          description: 'Selected responses deleted successfully',
+          description: 'Responses deleted successfully',
         });
+        setSelectedResponses(new Set());
+        setShowDeleteDialog(false);
       } else {
         toast({
           title: 'Error',
@@ -146,7 +96,8 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting responses:', err);
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',
@@ -154,8 +105,6 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
       });
     } finally {
       setIsDeleting(false);
-      setShowDeleteDialog(false);
-      setSelectedResponses(new Set());
     }
   };
 
@@ -164,81 +113,65 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="select-all"
             checked={selectedResponses.size === responses.length}
             onCheckedChange={toggleAll}
-            disabled={isDeleting}
           />
-          <label
-            htmlFor="select-all"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Select All
-          </label>
+          <span className="text-sm text-muted-foreground">
+            {selectedResponses.size} selected
+          </span>
         </div>
         {selectedResponses.size > 0 && (
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete Selected'}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Selected
+              </>
+            )}
           </Button>
         )}
       </div>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected responses.
-            </AlertDialogDescription>
-            <div className="text-sm text-red-500 mt-2">
-              Warning: Deleted responses cannot be recovered.
-            </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <div className="rounded-md border">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="w-12 p-2 text-center">
-                <Checkbox
-                  id="select-all"
-                  checked={selectedResponses.size === responses.length}
-                  onCheckedChange={toggleAll}
-                  disabled={isDeleting}
-                />
-              </th>
-              <th className="p-2 text-left text-sm font-medium">Survey Name</th>
-              <th className="p-2 text-left text-sm font-medium">Submission ID</th>
-              <th className="p-2 text-left text-sm font-medium">Submission Date</th>
-              <th className="p-2 text-left text-sm font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {responses.map(response => (
-              <tr key={response.id} className="border-b">
-                <td className="p-2 text-center">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12"></TableHead>
+              <TableHead>Response ID</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {responses.map((response) => (
+              <TableRow key={response.id}>
+                <TableCell>
                   <Checkbox
                     checked={selectedResponses.has(response.id)}
                     onCheckedChange={() => toggleResponse(response.id)}
-                    disabled={isDeleting}
                   />
-                </td>
-                <td className="p-2 text-sm">{response.form.title}</td>
-                <td className="p-2 font-mono text-sm">{getShortId(response.id)}</td>
-                <td className="p-2 text-sm">
-                  {format(new Date(response.createdAt), 'MMM d, yyyy h:mm a')}
-                </td>
-                <td className="p-2">
+                </TableCell>
+                <TableCell>{formatId(response.id)}</TableCell>
+                <TableCell>
+                  {new Date(response.createdAt).toLocaleString()}
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" asChild disabled={isDeleting}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                    >
                       <Link href={`/forms/${response.form.id}/responses/${response.id}/edit`}>
                         <Pencil className="h-4 w-4" />
                       </Link>
@@ -246,7 +179,6 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive"
                       onClick={() => {
                         setSelectedResponses(new Set([response.id]));
                         setShowDeleteDialog(true);
@@ -256,12 +188,29 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the selected responses.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

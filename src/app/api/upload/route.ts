@@ -1,96 +1,69 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { handleFileUpload, validateFile } from '@/lib/file-upload';
-import { headers } from 'next/headers';
-
-// Simple in-memory rate limiting
-// In production, use a proper rate limiting solution like Redis
-const rateLimit = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 10; // 10 requests per minute
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { mkdir } from 'fs/promises';
 
 /**
- * Check if a request should be rate limited
- * @param {string} identifier - The identifier for rate limiting (e.g., IP or user ID)
- * @returns {boolean} Whether the request should be rate limited
+ * API handler for file uploads
+ * This route handles file uploads and saves them to the public/uploads directory
+ * @param {NextRequest} request - The Next.js request object
+ * @returns {NextResponse} The response with the file path
  */
-function isRateLimited(identifier: string): boolean {
-  const now = Date.now();
-  const userRateLimit = rateLimit.get(identifier);
-  
-  if (!userRateLimit) {
-    rateLimit.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
+export async function POST(request: NextRequest) {
+  // Verify authentication
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
-  if (now > userRateLimit.resetTime) {
-    rateLimit.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  
-  if (userRateLimit.count >= MAX_REQUESTS) {
-    return true;
-  }
-  
-  userRateLimit.count += 1;
-  return false;
-}
 
-export async function POST(req: Request) {
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
-    
-    // Apply rate limiting
-    if (isRateLimited(userId)) {
-      return new NextResponse('Too many requests', { 
-        status: 429,
-        headers: {
-          'Retry-After': '60',
-          'Content-Type': 'application/json',
-        }
-      });
-    }
-
-    // Get the file from the request
-    const formData = await req.formData();
+    const formData = await request.formData();
     const file = formData.get('file') as File;
-
+    
     if (!file) {
-      return new NextResponse(JSON.stringify({ error: 'No file uploaded' }), { 
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate the file
-    const validation = await validateFile(file);
-    if (!validation.valid) {
-      return new NextResponse(JSON.stringify({ error: validation.error }), { 
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Upload the file
-    const fileData = await handleFileUpload(file);
-
-    // Return the file data
-    return NextResponse.json({ 
+    // Create a unique filename
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Generate a unique filename with original extension
+    const originalExtension = path.extname(file.name);
+    const filename = `${uuidv4()}${originalExtension}`;
+    
+    // Ensure uploads directory exists
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    await mkdir(uploadDir, { recursive: true });
+    
+    // Full path to save the file
+    const filePath = path.join(uploadDir, filename);
+    
+    // Write the file
+    fs.writeFileSync(filePath, buffer);
+    
+    // Return the file information
+    return NextResponse.json({
       success: true,
-      file: fileData
+      fileName: file.name,
+      filePath: `uploads/${filename}`,
+      fileSize: file.size,
+      mimeType: file.type,
     });
   } catch (error) {
     console.error('Error uploading file:', error);
-    return new NextResponse(JSON.stringify({ 
-      error: 'Error uploading file',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-    }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
   }
-} 
+}
+
+/**
+ * Limit the maximum file size to 10MB
+ */
+export const config = {
+  api: {
+    bodyParser: false,
+    sizeLimit: '10mb',
+  },
+}; 

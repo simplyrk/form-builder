@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import { createForm, updateForm } from '@/app/actions/forms';
-import type { Form, Field, FormInput, FieldInput } from '@/types/form';
+import type { Form, FormInput, FieldInput } from '@/types/form';
 import { toast } from 'sonner';
 
 interface FormBuilderProps {
@@ -55,7 +55,7 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
     setFields(newFields);
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
     const items = Array.from(fields);

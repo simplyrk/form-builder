@@ -72,7 +72,8 @@ export function AdminResponsesTable({ responses, onDelete }: AdminResponsesTable
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting responses:', err);
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',

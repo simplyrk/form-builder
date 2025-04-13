@@ -6,10 +6,29 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Field } from '@/types/form';
 
+type FieldValue = {
+  text: string;
+  textarea: string;
+  number: number;
+  email: string;
+  tel: string;
+  url: string;
+  select: string;
+  multiselect: string[];
+  checkbox: boolean;
+  radio: string;
+  file: File | null;
+  date: string;
+  time: string;
+  datetime: string;
+};
+
+type FieldType = keyof FieldValue;
+
 interface FormFieldProps {
   field: Field;
-  value: any;
-  onChange: (value: any) => void;
+  value: FieldValue[FieldType];
+  onChange: (value: FieldValue[FieldType]) => void;
   disabled?: boolean;
 }
 
@@ -22,8 +41,8 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
         return (
           <Input
             id={field.id}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as string || ''}
+            onChange={(e) => onChange(e.target.value as FieldValue['text'])}
             required={field.required}
             disabled={disabled}
           />
@@ -32,8 +51,8 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
         return (
           <Textarea
             id={field.id}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as string || ''}
+            onChange={(e) => onChange(e.target.value as FieldValue['textarea'])}
             required={field.required}
             disabled={disabled}
           />
@@ -41,12 +60,12 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
       case 'select':
         return (
           <Select
-            value={value || ''}
-            onValueChange={onChange}
+            value={value as string || ''}
+            onValueChange={(value) => onChange(value as FieldValue['select'])}
             required={field.required}
             disabled={disabled}
           >
-            <SelectTrigger id={field.id}>
+            <SelectTrigger>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
@@ -61,10 +80,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
       case 'email':
         return (
           <Input
-            id={field.id}
             type="email"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as string || ''}
+            onChange={(e) => onChange(e.target.value as FieldValue['email'])}
             required={field.required}
             disabled={disabled}
           />
@@ -72,10 +90,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
       case 'number':
         return (
           <Input
-            id={field.id}
             type="number"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as number || ''}
+            onChange={(e) => onChange(Number(e.target.value) as FieldValue['number'])}
             required={field.required}
             disabled={disabled}
           />
@@ -83,10 +100,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
       case 'date':
         return (
           <Input
-            id={field.id}
             type="date"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as string || ''}
+            onChange={(e) => onChange(e.target.value as FieldValue['date'])}
             required={field.required}
             disabled={disabled}
           />
@@ -96,7 +112,7 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
           <Input
             id={field.id}
             type="file"
-            onChange={(e) => onChange(e.target.files?.[0])}
+            onChange={(e) => onChange(e.target.files?.[0] as FieldValue['file'])}
             required={field.required}
             disabled={disabled}
           />
@@ -104,10 +120,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
       default:
         return (
           <Input
-            id={field.id}
             type={field.type}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            value={value as string || ''}
+            onChange={(e) => onChange(e.target.value as FieldValue[FieldType])}
             required={field.required}
             disabled={disabled}
           />

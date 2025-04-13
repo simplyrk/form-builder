@@ -12,8 +12,9 @@ interface FormPageProps {
 
 export default async function FormPage({ params }: FormPageProps) {
   const { userId } = await auth();
+  const formId = params.id;
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: formId },
     include: { 
       fields: {
         orderBy: {

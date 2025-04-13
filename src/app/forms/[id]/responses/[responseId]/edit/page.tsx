@@ -14,8 +14,12 @@ export default async function EditResponsePage({
     redirect('/sign-in');
   }
 
+  // Safely resolve params
+  const id = await Promise.resolve(params.id);
+  const responseId = await Promise.resolve(params.responseId);
+
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       fields: {
         orderBy: {
@@ -30,7 +34,7 @@ export default async function EditResponsePage({
   }
 
   const response = await prisma.response.findUnique({
-    where: { id: params.responseId },
+    where: { id: responseId },
     include: {
       fields: true,
     },

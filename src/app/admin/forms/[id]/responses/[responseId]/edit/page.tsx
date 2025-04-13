@@ -17,8 +17,12 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
     notFound();
   }
 
+  // Safely resolve params
+  const id = await Promise.resolve(params.id);
+  const responseId = await Promise.resolve(params.responseId);
+
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       fields: {
         orderBy: {
@@ -33,7 +37,7 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
   }
 
   const response = await prisma.response.findUnique({
-    where: { id: params.responseId },
+    where: { id: responseId },
     include: {
       fields: true,
     },

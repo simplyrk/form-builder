@@ -43,7 +43,9 @@ interface UserResponsesTableProps {
 }
 
 const formatId = (id: string) => {
-  return id.slice(0, 8) + '...' + id.slice(-8);
+  // Extract a shorter, more readable ID
+  // For IDs like "cm9eq140q00068ofvun4fac3n", we'll take the first 8 characters
+  return id.slice(0, 8).toUpperCase();
 };
 
 /**
@@ -147,7 +149,7 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"></TableHead>
-              <TableHead>Response ID</TableHead>
+              <TableHead>Submission ID</TableHead>
               <TableHead>Submitted</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>

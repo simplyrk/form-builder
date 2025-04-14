@@ -7,7 +7,7 @@
   --card-foreground: #171717;
   --popover: #ffffff;
   --popover-foreground: #171717;
-  --primary: #3e63dd;
+  --primary: #4f46e5;
   --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #171717;
@@ -17,27 +17,27 @@
   --accent-foreground: #171717;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #3e63dd;
+  --ring: #4f46e5;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #171717;
-  --card-foreground: #ededed;
-  --popover: #171717;
-  --popover-foreground: #ededed;
-  --primary: #3e63dd;
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #8b5cf6;
   --primary-foreground: #ffffff;
-  --secondary: #27272a;
-  --secondary-foreground: #ededed;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #ededed;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #3e63dd;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #8b5cf6;
 }
 
 @theme inline {
@@ -50,5 +50,10 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+/* Add smooth transitions for interactive elements */
+button, a, input, select, textarea {
+  transition: all 0.2s ease;
 }

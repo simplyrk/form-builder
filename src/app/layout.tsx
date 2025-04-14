@@ -1,10 +1,14 @@
-import { Inter } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 import { Logo } from '@/components/logo';
 import { Navbar } from '@/components/navbar';
 import { Providers } from '@/components/providers';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const poppins = Poppins({ 
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'Form Builder',
@@ -18,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={poppins.className}>
         <Providers>
           <div className="min-h-screen bg-background">
             <header className="border-b">

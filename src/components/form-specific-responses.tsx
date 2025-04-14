@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserResponsesTable } from '@/components/user-responses-table';
+import { ResponseTable } from '@/components/response-table';
 import { deleteResponses } from '@/app/actions/forms';
 import { useToast } from '@/components/ui/use-toast';
 import type { Form, Response } from '@/types/form';
@@ -17,16 +17,26 @@ interface FormSpecificResponsesProps {
 export function FormSpecificResponses({ form, responses }: FormSpecificResponsesProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async (responseIds: string[]): Promise<{ success: boolean; error?: string }> => {
-    setIsLoading(true);
+  // Process responses to ensure file paths are properly formatted
+  const processedResponses = responses.map(response => ({
+    ...response,
+    fields: response.fields.map(field => ({
+      ...field,
+      // Ensure file paths are properly formatted
+      filePath: field.filePath ? (field.filePath.startsWith('/api/files/') ? field.filePath : `/api/files/${field.filePath.replace(/^\/+/, '')}`) : null,
+    })),
+  }));
+
+  const handleDelete = async (responseIds: string[]) => {
+    setIsDeleting(true);
     try {
       const result = await deleteResponses(form.id, responseIds);
       if (result.success) {
         toast({
           title: 'Success',
-          description: 'Responses deleted successfully',
+          description: 'Selected responses deleted successfully',
         });
         router.refresh();
       } else {
@@ -36,7 +46,6 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
           variant: 'destructive',
         });
       }
-      return result;
     } catch (error) {
       console.error('Error deleting responses:', error);
       toast({
@@ -44,9 +53,8 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
         description: 'An unexpected error occurred',
         variant: 'destructive',
       });
-      return { success: false, error: 'An unexpected error occurred' };
     } finally {
-      setIsLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -67,12 +75,15 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
           <CardTitle>Your Responses</CardTitle>
         </CardHeader>
         <CardContent>
-          {responses.length === 0 ? (
+          {processedResponses.length === 0 ? (
             <p className="text-muted-foreground">You haven't submitted any responses to this form yet.</p>
           ) : (
-            <UserResponsesTable 
-              responses={responses.map(response => ({ ...response, form }))} 
+            <ResponseTable
+              form={form}
+              responses={processedResponses}
+              userMap={new Map([[processedResponses[0].submittedBy || 'anonymous', 'You']])}
               onDelete={handleDelete}
+              isDeleting={isDeleting}
             />
           )}
         </CardContent>

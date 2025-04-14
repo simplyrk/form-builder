@@ -17,8 +17,12 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
     notFound();
   }
 
+  // Properly await the params object as required by Next.js 13+
+  const { id: formId } = await Promise.resolve(params);
+
+  // First, check if the form exists and if the user has access to it
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: formId },
     include: {
       fields: {
         orderBy: {
@@ -28,12 +32,14 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
     },
   }) as Form | null;
 
+  // Admin can only access forms they created
   if (!form || form.createdBy !== userId) {
     notFound();
   }
 
+  // Fetch all responses for this form (admin can see all responses)
   const responses = await prisma.response.findMany({
-    where: { formId: params.id },
+    where: { formId },
     include: {
       fields: true,
     },
@@ -43,7 +49,7 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
   }) as Response[];
 
   // Get all unique user IDs from responses
-  const userIds = [...new Set(responses.map((r: Response) => r.submittedBy))];
+  const userIds = Array.from(new Set(responses.map((r: Response) => r.submittedBy)));
   
   // Fetch user data from Clerk
   const users = await Promise.all(

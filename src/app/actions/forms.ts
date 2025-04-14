@@ -11,7 +11,8 @@ import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 import { z } from 'zod';
 
 interface FileUploadResult {
@@ -299,10 +300,10 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     console.log('Uploading file:', file.name, 'to path:', filePath);
     
     // Ensure uploads directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
+    await fsPromises.mkdir(uploadDir, { recursive: true });
     
     // Write the file
-    await fs.writeFile(filePath, buffer);
+    await fsPromises.writeFile(filePath, buffer);
     
     console.log('File uploaded successfully');
     
@@ -425,10 +426,10 @@ export async function updateResponse(formId: string, responseId: string, data: F
     }
 
     // Revalidate the correct paths
-    revalidatePath(`/admin/forms/${formId}`);
-    revalidatePath(`/admin/forms/${formId}/responses`);
-    revalidatePath(`/admin/forms/${formId}/responses/${responseId}`);
-    revalidatePath(`/admin/forms/${formId}/responses/${responseId}/edit`);
+    revalidatePath(`/forms/${formId}`);
+    revalidatePath(`/forms/${formId}/responses`);
+    revalidatePath(`/forms/${formId}/responses/${responseId}`);
+    revalidatePath(`/forms/${formId}/responses/${responseId}/edit`);
 
     return { success: true };
   } catch (error) {
@@ -440,26 +441,56 @@ export async function updateResponse(formId: string, responseId: string, data: F
   }
 }
 
-export async function submitResponse(
-  formId: string,
-  data: Record<string, string | string[] | File>
-) {
+// Helper function to save uploaded files
+async function saveFile(file: File, formId: string, responseId: string): Promise<string> {
+  // Create a unique filename
+  const timestamp = Date.now();
+  const originalName = file.name;
+  const extension = originalName.split('.').pop();
+  const fileName = `${timestamp}-${originalName}`;
+  
+  // Create the directory path
+  const dirPath = path.join(process.cwd(), 'public', 'uploads', formId, responseId);
+  
+  // Ensure the directory exists
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  
+  // Create the full file path
+  const filePath = path.join(dirPath, fileName);
+  
+  // Convert File to Buffer and save it
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  fs.writeFileSync(filePath, buffer);
+  
+  // Return the relative path for storage in the database
+  return `/uploads/${formId}/${responseId}/${fileName}`;
+}
+
+export async function submitResponse(formId: string, data: Record<string, string | string[] | File>) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: 'Not authenticated' };
+      return { success: false, error: 'Unauthorized' };
     }
 
+    // Get the form to validate it exists and is published
     const form = await prisma.form.findUnique({
       where: { id: formId },
-      include: { fields: true },
+      include: { fields: true }
     });
 
     if (!form) {
       return { success: false, error: 'Form not found' };
     }
 
-    // Create the response first
+    if (!form.published) {
+      return { success: false, error: 'Form is not published' };
+    }
+
+    // Create the response with all fields at once
     const response = await prisma.response.create({
       data: {
         formId,
@@ -467,22 +498,60 @@ export async function submitResponse(
         fields: {
           create: form.fields.map(field => {
             const value = data[field.id];
+            let processedValue = '';
+
+            if (value instanceof File) {
+              // For file uploads, we'll update this after saving the file
+              processedValue = '';
+            } else if (Array.isArray(value)) {
+              // For array values (like checkboxes)
+              processedValue = JSON.stringify(value);
+            } else if (value !== null && value !== undefined) {
+              // For string values
+              processedValue = value.toString();
+            }
+
             return {
-              fieldId: field.id,
-              value: Array.isArray(value) ? value.join(',') : value?.toString() || '',
+              value: processedValue,
               field: {
                 connect: {
                   id: field.id
                 }
               }
             };
-          }),
-        },
+          })
+        }
       },
       include: {
-        fields: true,
-      },
+        fields: {
+          include: {
+            field: true
+          }
+        }
+      }
     });
+
+    // Handle file uploads separately
+    for (const [fieldId, value] of Object.entries(data)) {
+      if (value instanceof File) {
+        const responseField = response.fields.find(f => f.field.id === fieldId);
+        if (!responseField) continue;
+
+        // Handle file upload
+        const filePath = await saveFile(value, formId, response.id);
+        
+        // Update the response field with the file path
+        await prisma.responseField.update({
+          where: { id: responseField.id },
+          data: { 
+            value: filePath,
+            fileName: value.name,
+            fileSize: value.size,
+            mimeType: value.type
+          }
+        });
+      }
+    }
 
     revalidatePath('/');
     revalidatePath(`/forms/${formId}`);

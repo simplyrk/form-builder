@@ -53,6 +53,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, FormDataValue>>(() => {
     const initialData: Record<string, FormDataValue> = {};
     response.fields.forEach((responseField: ResponseField) => {
@@ -87,57 +88,43 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
    * Handles form submission, including file uploads and deletions
    * @param {React.FormEvent} e - The form submission event
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      const data = new FormData();
+      const formData = new FormData(e.currentTarget);
+      const result = await updateResponse(form.id, response.id, formData);
       
-      // Add regular form fields
-      Object.entries(formData).forEach(([fieldId, value]) => {
-        if (value instanceof File) {
-          data.append(fieldId, value);
-        } else if (Array.isArray(value)) {
-          data.append(fieldId, value.join(','));
-        } else if (value !== null) {
-          data.append(fieldId, String(value));
-        }
-      });
-
-      // Add file fields information
-      Object.entries(fileFields).forEach(([fieldId, fieldInfo]) => {
-        if (fieldInfo.file) {
-          // Make sure we're appending the actual File object
-          data.append(fieldId, fieldInfo.file);
-        } else if (fieldInfo.deleteExisting) {
-          data.append(`${fieldId}_delete`, 'true');
-        }
-      });
-
-      console.log('Submitting form with files:', Object.entries(fileFields).filter(([_, info]) => info.file));
-      
-      const result = await updateResponse(form.id, response.id, data);
       if (result.success) {
         toast({
           title: 'Success',
           description: 'Response updated successfully',
         });
+        // Go back to the previous page
         router.back();
-        router.refresh();
+        // Add a small delay before refreshing
+        setTimeout(() => {
+          router.refresh();
+        }, 100);
       } else {
-        throw new Error(result.error || 'Failed to update response');
+        setError(result.error || 'Failed to update response');
       }
     } catch (err) {
-      console.error('Update error:', err);
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to update response',
-        variant: 'destructive',
-      });
+      setError('An error occurred while updating the response');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    // Go back to the previous page
+    router.back();
+    // Add a small delay before refreshing
+    setTimeout(() => {
+      router.refresh();
+    }, 100);
   };
 
   const handleFieldChange = (fieldId: string, value: FormDataValue) => {
@@ -395,7 +382,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/')}
+          onClick={handleCancel}
         >
           Cancel
         </Button>

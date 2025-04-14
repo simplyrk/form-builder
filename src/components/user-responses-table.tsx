@@ -9,8 +9,8 @@
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2, Loader2, Pencil } from 'lucide-react';
-import type { Form, Response } from '@/types/form';
+import { Trash2, Loader2, Pencil, FileIcon, ImageIcon } from 'lucide-react';
+import type { Form, Response, FormField, ResponseField } from '@/types/form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 /**
  * Props for the UserResponsesTable component
@@ -47,6 +48,62 @@ const formatId = (id: string) => {
   // For IDs like "cm9eq140q00068ofvun4fac3n", we'll take the first 8 characters
   return id.slice(0, 8).toUpperCase();
 };
+
+/**
+ * Renders the value of a response field, handling different field types
+ * @param {FormField} field - The field definition
+ * @param {ResponseField} responseField - The response field value
+ * @returns {JSX.Element | string} The rendered field value
+ */
+function renderFieldValue(field: FormField, responseField: ResponseField | undefined) {
+  if (!responseField) return 'No response';
+
+  // Check if the field is a file type
+  if (field.type === 'file') {
+    // Determine the path, preferring filePath but falling back to value
+    const path = responseField.filePath || responseField.value;
+
+    // If a valid path exists, render it nicely with icon, name, and View link
+    if (path && typeof path === 'string') {
+      const isImage = responseField.mimeType?.startsWith('image/');
+      // Use provided fileName or extract from path
+      const fileName = responseField.fileName || path.split('/').pop() || 'File'; 
+
+      return (
+        <div className="flex items-center space-x-2">
+          {isImage ? (
+            <ImageIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          ) : (
+            <FileIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          )}
+          <span className="text-sm truncate" title={fileName}>{fileName}</span>
+          <a 
+            href={`/api/files/${path}`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-500 text-sm hover:underline ml-auto flex-shrink-0"
+          >
+            View
+          </a>
+        </div>
+      );
+    } else {
+      // If it's a file field but no path is found
+      return 'No file uploaded';
+    }
+  }
+
+  // Handle other non-file field types
+  switch (field.type) {
+    case 'checkbox':
+      return responseField.value === 'true' ? 'Yes' : 'No';
+    case 'multiselect':
+      const multiValue = String(responseField.value);
+      return multiValue.split(',').join(', ');
+    default:
+      return responseField.value;
+  }
+}
 
 /**
  * UserResponsesTable Component
@@ -149,8 +206,12 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"></TableHead>
+              <TableHead>Form</TableHead>
               <TableHead>Submission ID</TableHead>
               <TableHead>Submitted</TableHead>
+              {responses[0]?.form.fields.map(field => (
+                <TableHead key={field.id}>{field.label}</TableHead>
+              ))}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -163,10 +224,21 @@ export function UserResponsesTable({ responses, onDelete }: UserResponsesTablePr
                     onCheckedChange={() => toggleResponse(response.id)}
                   />
                 </TableCell>
+                <TableCell>{response.form.title}</TableCell>
                 <TableCell>{formatId(response.id)}</TableCell>
                 <TableCell>
                   {new Date(response.createdAt).toLocaleString()}
                 </TableCell>
+                {response.form.fields.map(field => {
+                  const fieldResponse = response.fields.find(
+                    (f) => f.fieldId === field.id
+                  );
+                  return (
+                    <TableCell key={field.id}>
+                      {renderFieldValue(field, fieldResponse)}
+                    </TableCell>
+                  );
+                })}
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Button

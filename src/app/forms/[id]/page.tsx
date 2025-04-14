@@ -12,19 +12,24 @@ interface FormPageProps {
 
 export default async function FormPage({ params }: FormPageProps) {
   const { userId } = await auth();
-  const formId = params.id;
+  const { id: formId } = await Promise.resolve(params);
+  
   const form = await prisma.form.findUnique({
     where: { id: formId },
     include: { 
       fields: {
-        orderBy: {
-          order: 'asc'
-        }
-      }
-    },
+        orderBy: { order: 'asc' }
+      },
+      responses: true
+    }
   }) as Form | null;
 
-  if (!form || (!form.published && form.createdBy !== userId)) {
+  if (!form) {
+    notFound();
+  }
+
+  // Check if the form is published or if the user is the creator
+  if (!form.published && form.createdBy !== userId) {
     notFound();
   }
 

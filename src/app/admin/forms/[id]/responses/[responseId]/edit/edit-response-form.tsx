@@ -94,14 +94,17 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
       }
 
       toast.success('Response updated successfully');
-      router.refresh();
       
       // Only call onCancel if it's provided
       if (onCancel) {
         onCancel();
       } else {
-        // If onCancel is not provided, navigate back to the responses page
-        router.push(`/admin/forms/${form.id}/responses`);
+        // Go back to the previous page
+        router.back();
+        // Add a small delay before refreshing
+        setTimeout(() => {
+          router.refresh();
+        }, 100);
       }
     } catch (error) {
       console.error('Error updating response:', error);
@@ -362,7 +365,11 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
             if (onCancel) {
               onCancel();
             } else {
-              router.push(`/admin/forms/${form.id}/responses`);
+              router.back();
+              // Add a small delay before refreshing
+              setTimeout(() => {
+                router.refresh();
+              }, 100);
             }
           }}
         >

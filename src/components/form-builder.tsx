@@ -86,8 +86,10 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push('/admin');
-        router.refresh();
+        router.back();
+        setTimeout(() => {
+          router.refresh();
+        }, 100);
       }
     } catch (error) {
       console.error('Error saving form:', error);
@@ -254,7 +256,20 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
         </DragDropContext>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end space-x-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => {
+            router.back();
+            setTimeout(() => {
+              router.refresh();
+            }, 100);
+          }}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : (form ? 'Update Form' : 'Create Form')}
         </Button>

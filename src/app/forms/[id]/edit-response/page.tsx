@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { EditResponseForm } from './edit-response-form';
+import type { Form, Response, FormField, ResponseField, FormResponse } from '@/types/form';
 
 interface EditResponsePageProps {
   params: {
@@ -10,13 +11,20 @@ interface EditResponsePageProps {
 }
 
 export default async function EditResponsePage({ params }: EditResponsePageProps) {
-  const { id: formId, responseId } = params;
+  const { id: formId, responseId } = await Promise.resolve(params);
   
   try {
-    const [form, response] = await Promise.all([
+    const [formData, responseData] = await Promise.all([
       prisma.form.findUnique({
         where: { id: formId },
-        include: { fields: true },
+        include: { 
+          fields: true,
+          responses: {
+            include: {
+              fields: true
+            }
+          }
+        },
       }),
       prisma.response.findUnique({
         where: { id: responseId },
@@ -24,9 +32,38 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
       })
     ]);
     
-    if (!form || !response) {
+    if (!formData || !responseData) {
       return notFound();
     }
+    
+    const form = {
+      ...formData,
+      updatedAt: formData.updatedAt || formData.createdAt,
+      fields: formData.fields.map(field => ({
+        ...field,
+        createdAt: formData.createdAt,
+        updatedAt: formData.updatedAt || formData.createdAt,
+      })),
+      responses: formData.responses.map(response => ({
+        ...response,
+        updatedAt: response.createdAt,
+        fields: response.fields.map(field => ({
+          ...field,
+          createdAt: response.createdAt,
+          updatedAt: response.createdAt,
+        }))
+      }))
+    } as Form;
+    
+    const response = {
+      ...responseData,
+      updatedAt: responseData.createdAt,
+      fields: responseData.fields.map(field => ({
+        ...field,
+        createdAt: responseData.createdAt,
+        updatedAt: responseData.createdAt,
+      })),
+    } as Response;
     
     return (
       <div className="container mx-auto py-8">

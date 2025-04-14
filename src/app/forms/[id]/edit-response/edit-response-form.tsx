@@ -66,6 +66,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const [deletedFiles, setDeletedFiles] = useState<Set<string>>(new Set());
   // Track which file fields should be rendered
   const [showFileInput, setShowFileInput] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize the showFileInput state based on the fields
   useEffect(() => {
@@ -78,55 +79,35 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
     setShowFileInput(initialShowFileInput);
   }, [form.fields]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // Create a FormData object for submission
-      const formDataObj = new FormData();
+      const formData = new FormData(e.currentTarget);
+      const result = await updateResponse(form.id, response.id, formData);
       
-      // Add regular form data
-      Object.entries(formData).forEach(([fieldId, value]) => {
-        if (value !== null) {
-          if (value instanceof File) {
-            formDataObj.append(fieldId, value);
-          } else if (Array.isArray(value)) {
-            formDataObj.append(fieldId, value.join(','));
-          } else {
-            formDataObj.append(fieldId, String(value));
-          }
-        }
-      });
-      
-      // Add file data to submission
-      Object.keys(fileData).forEach(fieldId => {
-        if (fileData[fieldId]) {
-          formDataObj.append(fieldId, fileData[fieldId]!);
-        }
-      });
-      
-      // Add deleted files to submission
-      deletedFiles.forEach(fieldId => {
-        formDataObj.append(`${fieldId}_delete`, 'true');
-      });
-      
-      await updateResponse(form.id, response.id, formDataObj);
-      toast({
-        title: 'Success',
-        description: 'Your response has been updated.',
-      });
-      router.push('/responses');
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: 'Response updated successfully',
+        });
+        // Go back to the previous page
+        window.history.back();
+      } else {
+        setError(result.error || 'Failed to update response');
+      }
     } catch (err) {
-      console.error('Failed to update response:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update response. Please try again.',
-        variant: 'destructive',
-      });
+      setError('An error occurred while updating the response');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    // Go back to the previous page
+    window.history.back();
   };
 
   const handleFieldChange = (fieldId: string, value: string | boolean | string[]) => {
@@ -307,7 +288,7 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={handleCancel}
         >
           Cancel
         </Button>

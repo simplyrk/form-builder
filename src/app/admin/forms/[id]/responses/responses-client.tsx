@@ -19,6 +19,16 @@ export function ResponsesClient({ form, responses, userMap }: ResponsesClientPro
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
+  // Process responses to ensure file paths are properly formatted
+  const processedResponses = responses.map(response => ({
+    ...response,
+    fields: response.fields.map(field => ({
+      ...field,
+      // Ensure file paths are properly formatted
+      filePath: field.filePath ? (field.filePath.startsWith('/api/files/') ? field.filePath : `/api/files/${field.filePath.replace(/^\/+/, '')}`) : null,
+    })),
+  }));
+
   const handleDelete = async (responseIds: string[]) => {
     setIsDeleting(true);
     try {
@@ -59,13 +69,13 @@ export function ResponsesClient({ form, responses, userMap }: ResponsesClientPro
       <div className="mb-4 flex justify-end">
         <CSVExportButton
           form={form}
-          responses={responses}
+          responses={processedResponses}
           userMap={userMap}
         />
       </div>
       <ResponseTable
         form={form}
-        responses={responses}
+        responses={processedResponses}
         userMap={userMap}
         onDelete={handleDelete}
         isDeleting={isDeleting}

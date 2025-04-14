@@ -44,7 +44,7 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
     return data;
   });
 
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -62,59 +62,88 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
     }));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitting(true);
+    setIsSubmitting(true);
     setError(null);
 
     try {
-      // If an onSubmit prop is provided, use it
-      if (onSubmit) {
-        await onSubmit(formData);
-      } else {
-        // Convert form data to the expected format
-        const processedData: ApiFormData = {};
-        for (const [key, value] of Object.entries(formData)) {
+      console.log('Starting form submission...');
+      // Use the formData state instead of creating a new FormData object
+      // This ensures we're using the values from our controlled components
+      const processedData: Record<string, string | string[] | File> = {};
+      
+      // Process all form fields from our state
+      Object.entries(formData).forEach(([fieldId, value]) => {
+        if (value instanceof File) {
+          // For file uploads
+          processedData[fieldId] = value;
+        } else if (Array.isArray(value)) {
+          // For array values (like checkboxes)
+          processedData[fieldId] = value;
+        } else if (value !== null && value !== undefined) {
+          // For string values
+          processedData[fieldId] = value.toString();
+        }
+      });
+
+      console.log('Processed form data:', processedData);
+
+      if (responseId) {
+        console.log('Updating existing response...');
+        // For updates, we need to use FormData for file uploads
+        const formDataObj = new FormData();
+        
+        // Add all form fields to the FormData
+        Object.entries(processedData).forEach(([fieldId, value]) => {
           if (value instanceof File) {
-            // Handle file uploads separately
-            const formDataObj = new FormData();
-            formDataObj.append('file', value);
-            // TODO: Implement file upload handling
-            processedData[key] = null;
+            formDataObj.append(fieldId, value);
           } else if (Array.isArray(value)) {
-            processedData[key] = value.join(',');
-          } else if (typeof value === 'boolean') {
-            processedData[key] = value;
-          } else if (typeof value === 'number') {
-            processedData[key] = value;
+            value.forEach(v => formDataObj.append(fieldId, v));
           } else {
-            processedData[key] = value?.toString() || null;
+            formDataObj.append(fieldId, value);
           }
-        }
-
-        if (responseId) {
-          await updateResponse(responseId, processedData);
-        } else {
-          await submitResponse(form.id, processedData);
-        }
-
-        toast({
-          title: 'Success',
-          description: responseId ? 'Response updated successfully' : 'Response submitted successfully',
         });
+        
+        // Update existing response
+        const result = await updateResponse(form.id, responseId, formDataObj);
+        console.log('Update response result:', result);
+        
+        if (result.success) {
+          toast({
+            title: 'Success',
+            description: 'Response updated successfully',
+          });
+          router.back();
+        } else {
+          throw new Error(result.error || 'Failed to update response');
+        }
+      } else {
+        console.log('Submitting new response...');
+        // Submit new response
+        const result = await submitResponse(form.id, processedData);
+        console.log('Submit response result:', result);
+        
+        if (result.success) {
+          toast({
+            title: 'Success',
+            description: 'Response submitted successfully',
+          });
+          router.back();
+        } else {
+          throw new Error(result.error || 'Failed to submit response');
+        }
       }
-
-      router.refresh();
     } catch (err) {
-      console.error('Form submission error:', err);
-      setError('Failed to submit the form. Please try again.');
+      console.error('Error submitting form:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit response');
       toast({
-        title: 'Submission Error',
-        description: 'Failed to submit the form. Please try again.',
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to submit response',
         variant: 'destructive',
       });
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -127,7 +156,7 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
               field={field}
               value={formData[field.id]}
               onChange={(value) => handleFieldChange(field.id, value)}
-              disabled={submitting}
+              disabled={isSubmitting}
             />
             {field.required && (
               <span className="text-xs text-muted-foreground">Required</span>
@@ -143,8 +172,8 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
       )}
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Saving...' : (responseId ? 'Update Response' : 'Submit')}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : (responseId ? 'Update Response' : 'Submit')}
         </Button>
       </div>
     </form>

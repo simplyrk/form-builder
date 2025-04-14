@@ -17,8 +17,11 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
     redirect('/sign-in');
   }
 
+  // Properly await the params object as required by Next.js 13+
+  const { id: formId, responseId } = await Promise.resolve(params);
+
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id: formId },
     include: {
       fields: {
         orderBy: {
@@ -33,7 +36,7 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
   }
 
   const response = await prisma.response.findUnique({
-    where: { id: params.responseId },
+    where: { id: responseId },
     include: {
       fields: true,
     },

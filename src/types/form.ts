@@ -140,6 +140,6 @@ export interface FormFieldWithResponses extends FormField {
  * It's kept for backward compatibility with existing code.
  */
 export interface Response extends FormResponse {
-  // This interface intentionally has no additional members
-  // It's used as an alias for FormResponse for backward compatibility
+  /** ID of the user who submitted the response */
+  submittedBy: string;
 } 

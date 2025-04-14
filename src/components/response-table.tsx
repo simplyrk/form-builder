@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Pencil, FileIcon, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { Form, Response, Field, ResponseField } from '@/types/form';
+import type { Form, Response, ResponseField, FormField } from '@/types/form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,54 +51,55 @@ function getShortId(id: string) {
 
 /**
  * Renders the value of a response field, handling different field types
- * @param {Field} field - The field definition
+ * @param {FormField} field - The field definition
  * @param {ResponseField} responseField - The response field value
  * @returns {JSX.Element | string} The rendered field value
  */
-function renderFieldValue(field: Field, responseField: ResponseField | undefined) {
+function renderFieldValue(field: FormField, responseField: ResponseField | undefined) {
   if (!responseField) return 'No response';
   
-  // Check if this is a file upload
-  if (responseField.filePath) {
-    const isImage = responseField.mimeType?.startsWith('image/');
-    const fileName = responseField.fileName || 'Download file';
-    
-    // Ensure the file path starts with a slash
-    let filePath = responseField.filePath;
-    // If filePath doesn't start with a slash, add it
-    if (!filePath.startsWith('/')) {
-      filePath = `/${filePath}`;
-    }
+  // Check FIELD TYPE first
+  if (field.type === 'file') {
+    // Determine the path, preferring filePath but falling back to value
+    const path = responseField.filePath || responseField.value;
 
-    return (
-      <div className="flex items-center space-x-2">
-        {isImage ? (
-          <ImageIcon className="h-4 w-4" />
-        ) : (
-          <FileIcon className="h-4 w-4" />
-        )}
-        <a
-          href={filePath}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          {fileName}
-        </a>
-      </div>
-    );
+    // If a valid path exists, render it nicely with icon, name, and View link
+    if (path && typeof path === 'string') { 
+      const isImage = responseField.mimeType?.startsWith('image/');
+      // Use provided fileName or extract from path
+      const fileName = responseField.fileName || path.split('/').pop() || 'File'; 
+
+      return (
+        <div className="flex items-center space-x-2">
+          {isImage ? (
+            <ImageIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          ) : (
+            <FileIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          )}
+          <span className="text-sm truncate" title={fileName}>{fileName}</span>
+          <a 
+            href={`/api/files/${path}`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-500 text-sm hover:underline ml-auto flex-shrink-0"
+          >
+            View
+          </a>
+        </div>
+      );
+    } else {
+      // If it's a file field but no path is found
+      return 'No file uploaded';
+    }
   }
 
-  // Handle different field types
+  // Handle other non-file field types
   switch (field.type) {
     case 'checkbox':
       return responseField.value === 'true' ? 'Yes' : 'No';
     case 'multiselect':
-      return typeof responseField.value === 'string' 
-        ? responseField.value.split(',').join(', ')
-        : Array.isArray(responseField.value)
-        ? responseField.value.join(', ')
-        : responseField.value;
+      const multiValue = String(responseField.value);
+      return multiValue.split(',').join(', ');
     default:
       return responseField.value;
   }

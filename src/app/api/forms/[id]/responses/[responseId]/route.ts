@@ -25,18 +25,21 @@ export async function PUT(
     // Get the form data from the request
     const formData = await request.formData();
 
+    // Properly await the params object as required by Next.js 13+
+    const { id: formId, responseId } = await Promise.resolve(params);
+
     // Update the response
-    const result = await updateResponse(params.id, params.responseId, formData);
+    const result = await updateResponse(formId, responseId, formData);
     
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
     // Revalidate the form and response pages
-    revalidatePath(`/admin/forms/${params.id}`);
-    revalidatePath(`/admin/forms/${params.id}/responses`);
-    revalidatePath(`/admin/forms/${params.id}/responses/${params.responseId}`);
-    revalidatePath(`/admin/forms/${params.id}/responses/${params.responseId}/edit`);
+    revalidatePath(`/forms/${formId}`);
+    revalidatePath(`/forms/${formId}/responses`);
+    revalidatePath(`/forms/${formId}/responses/${responseId}`);
+    revalidatePath(`/forms/${formId}/responses/${responseId}/edit`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

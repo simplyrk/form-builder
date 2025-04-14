@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
 import path from 'path';
-import { stat } from 'fs/promises';
+import fs from 'fs';
+import { auth } from '@clerk/nextjs/server';
 
 /**
  * API handler for serving files
@@ -10,80 +10,56 @@ import { stat } from 'fs/promises';
  * @param {Object} params - The route parameters
  * @returns {NextResponse} The file response
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
     // Safely await params even though it's not a promise (to satisfy NextJS)
-    const pathSegments = await Promise.resolve(params.path);
+    const { path: pathSegments } = await Promise.resolve(params);
     
     // Don't add 'uploads' here since it's already in the path
     const filePath = path.join(...pathSegments);
     
-    // Create an absolute path to the file
+    // Construct the full path to the file
     const fullPath = path.join(process.cwd(), 'public', filePath);
-
-    console.log('Looking for file at:', fullPath);
-
-    // Check if file exists
-    try {
-      const stats = await stat(fullPath);
-      if (!stats.isFile()) {
-        console.error('Not a file:', fullPath);
-        return new NextResponse('Not found', { status: 404 });
-      }
-    } catch {
-      console.error('File not found:', fullPath);
-      return new NextResponse('Not found', { status: 404 });
+    
+    console.log(`Looking for file at: ${fullPath}`);
+    
+    // Check if the file exists
+    if (!fs.existsSync(fullPath)) {
+      console.error(`File not found: ${fullPath}`);
+      return new NextResponse('File not found', { status: 404 });
     }
-
+    
+    // Get the file extension to determine the content type
+    const ext = path.extname(fullPath).toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.gif') {
+      contentType = 'image/gif';
+    } else if (ext === '.pdf') {
+      contentType = 'application/pdf';
+    } else if (ext === '.doc' || ext === '.docx') {
+      contentType = 'application/msword';
+    } else if (ext === '.xls' || ext === '.xlsx') {
+      contentType = 'application/vnd.ms-excel';
+    }
+    
     // Read the file
     const fileBuffer = fs.readFileSync(fullPath);
     
-    // Determine content type based on file extension
-    const ext = path.extname(filePath).toLowerCase();
-    let contentType = 'application/octet-stream'; // Default content type
+    // Get the filename from the path
+    const fileName = path.basename(fullPath);
     
-    // Set content type based on extension
-    switch (ext) {
-      case '.jpg':
-      case '.jpeg':
-        contentType = 'image/jpeg';
-        break;
-      case '.png':
-        contentType = 'image/png';
-        break;
-      case '.gif':
-        contentType = 'image/gif';
-        break;
-      case '.pdf':
-        contentType = 'application/pdf';
-        break;
-      case '.txt':
-        contentType = 'text/plain';
-        break;
-      case '.doc':
-      case '.docx':
-        contentType = 'application/msword';
-        break;
-      case '.xls':
-      case '.xlsx':
-        contentType = 'application/vnd.ms-excel';
-        break;
-      case '.zip':
-        contentType = 'application/zip';
-        break;
-    }
-
-    console.log('Serving file:', path.basename(filePath), 'with content type:', contentType);
-
-    // Return the file
+    console.log(`Serving file: ${fileName} with content type: ${contentType}`);
+    
+    // Return the file with the appropriate content type
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${path.basename(filePath)}"`,
-        'Cache-Control': 'public, max-age=3600',
+        'Content-Disposition': `inline; filename="${fileName}"`,
       },
     });
   } catch (error) {

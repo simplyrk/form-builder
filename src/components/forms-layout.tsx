@@ -42,6 +42,16 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     fetchAvailableForms();
   }, []);
 
+  const handleFormClick = (formId: string) => {
+    // If we're already on the form's responses page, navigate to the form page
+    if (pathname === `/forms/${formId}/responses`) {
+      router.push(`/forms/${formId}`);
+    } else {
+      // Otherwise, navigate to the form's responses page
+      router.push(`/forms/${formId}/responses`);
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)]">
       {/* Sidebar */}
@@ -58,10 +68,10 @@ export function FormsLayout({ children }: FormsLayoutProps) {
             <ul className="space-y-1">
               {availableForms.map((form) => (
                 <li key={form.id}>
-                  <Link 
-                    href={`/forms/${form.id}`}
+                  <button 
+                    onClick={() => handleFormClick(form.id)}
                     className={cn(
-                      "flex items-center p-2 rounded-md text-sm transition-colors",
+                      "flex items-center w-full p-2 rounded-md text-sm transition-colors",
                       "hover:bg-muted/50",
                       currentFormId === form.id 
                         ? "bg-primary/10 text-primary font-medium" 
@@ -73,7 +83,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
                     {currentFormId === form.id && (
                       <ChevronRight className="h-4 w-4 ml-auto" />
                     )}
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>

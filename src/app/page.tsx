@@ -1,85 +1,45 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserResponsesTable } from '@/components/user-responses-table';
-import { deleteResponses } from '@/app/actions/forms';
-import { Toaster } from '@/components/ui/toaster';
-import { FileText, Calendar, CheckCircle } from 'lucide-react';
-import type { Form, Response } from '@/types/form';
-import { cn } from '@/lib/utils';
+import { FileText } from 'lucide-react';
+import type { Form } from '@/types/form';
 import { FormsLayout } from '@/components/forms-layout';
 
 export default function HomePage() {
   const { userId } = useAuth();
   const router = useRouter();
   const [availableForms, setAvailableForms] = useState<Form[]>([]);
-  const [userResponses, setUserResponses] = useState<Array<Response & { form: Form }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      await Promise.all([fetchAvailableForms(), fetchUserResponses()]);
-    } catch (error) {
-      setError('Failed to load data. Please try again later.');
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchAvailableForms = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/forms/available');
+        if (!response.ok) {
+          throw new Error('Failed to fetch available forms');
+        }
+        const data = await response.json();
+        setAvailableForms(data);
+      } catch (error) {
+        setError('Failed to load data. Please try again later.');
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (!userId) {
       router.push('/sign-in');
       return;
     }
-    fetchData();
-  }, [userId, router, fetchData]);
-
-  const fetchAvailableForms = async () => {
-    const response = await fetch('/api/forms/available');
-    if (!response.ok) {
-      throw new Error('Failed to fetch available forms');
-    }
-    const data = await response.json();
-    setAvailableForms(data);
-  };
-
-  const fetchUserResponses = async () => {
-    const response = await fetch('/api/responses/user');
-    if (!response.ok) {
-      throw new Error('Failed to fetch user responses');
-    }
-    const data = await response.json();
-    setUserResponses(data);
-  };
-
-  const handleDelete = async (responseIds: string[]) => {
-    try {
-      // Get the form ID from the first response
-      const response = userResponses.find(r => r.id === responseIds[0]);
-      if (!response) {
-        return { success: false, error: 'Response not found' };
-      }
-
-      console.log(`Deleting ${responseIds.length} responses for form ${response.form.id}`);
-      const result = await deleteResponses(response.form.id, responseIds);
-      if (result.success) {
-        await fetchUserResponses();
-        return { success: true };
-      }
-      return { success: false, error: result.error || 'Failed to delete responses' };
-    } catch (error) {
-      console.error('Error deleting responses:', error);
-      return { success: false, error: 'Failed to delete responses' };
-    }
-  };
+    fetchAvailableForms();
+  }, [userId, router]);
 
   if (!userId) {
     return null;
@@ -94,7 +54,7 @@ export default function HomePage() {
             <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={fetchData}>Try Again</Button>
+            <button onClick={() => window.location.reload()}>Try Again</button>
           </CardContent>
         </Card>
       </div>
@@ -107,21 +67,27 @@ export default function HomePage() {
         <div className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Your Responses</CardTitle>
-              <CardDescription>Forms you have submitted</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-6 w-6" />
+                Welcome to Form Builder
+              </CardTitle>
+              <CardDescription>
+                Click on a form in the navbar to get started
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <p className="text-muted-foreground">Loading your responses...</p>
-              ) : userResponses.length === 0 ? (
-                <p className="text-muted-foreground">You haven&apos;t submitted any forms yet.</p>
+                <p className="text-muted-foreground">Loading available forms...</p>
+              ) : availableForms.length === 0 ? (
+                <p className="text-muted-foreground">No forms are available at the moment.</p>
               ) : (
-                <UserResponsesTable responses={userResponses} onDelete={handleDelete} />
+                <p className="text-muted-foreground">
+                  There are {availableForms.length} form{availableForms.length === 1 ? '' : 's'} available.
+                </p>
               )}
             </CardContent>
           </Card>
         </div>
-        <Toaster />
       </div>
     </FormsLayout>
   );

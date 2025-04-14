@@ -57,43 +57,27 @@ const formatId = (id: string) => {
  */
 function renderFieldValue(field: FormField, responseField: ResponseField | undefined) {
   if (!responseField) return 'No response';
-
-  // Check if the field is a file type
+  
+  // Check if field is a file type
   if (field.type === 'file') {
-    // Determine the path, preferring filePath but falling back to value
     const path = responseField.filePath || responseField.value;
-
-    // If a valid path exists, render it nicely with icon, name, and View link
+    
     if (path && typeof path === 'string') {
-      const isImage = responseField.mimeType?.startsWith('image/');
-      // Use provided fileName or extract from path
-      const fileName = responseField.fileName || path.split('/').pop() || 'File'; 
-
       return (
-        <div className="flex items-center space-x-2">
-          {isImage ? (
-            <ImageIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
-          ) : (
-            <FileIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          )}
-          <span className="text-sm truncate" title={fileName}>{fileName}</span>
-          <a 
-            href={`/api/files/${path}`}
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-500 text-sm hover:underline ml-auto flex-shrink-0"
-          >
-            View
-          </a>
-        </div>
+        <a 
+          href={`/api/files/${path}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          View
+        </a>
       );
-    } else {
-      // If it's a file field but no path is found
-      return 'No file uploaded';
     }
+    return 'No file uploaded';
   }
 
-  // Handle other non-file field types
+  // Handle other field types
   switch (field.type) {
     case 'checkbox':
       return responseField.value === 'true' ? 'Yes' : 'No';

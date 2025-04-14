@@ -1,6 +1,6 @@
-# Form Builder
+# Cursor CRM
 
-A modern, user-friendly form builder application built with Next.js, TypeScript, and Prisma. This application allows users to create, manage, and collect responses for custom forms.
+A modern, user-friendly form builder and CRM application built with Next.js 15, TypeScript, and Prisma. This application allows users to create, manage, and collect responses for custom forms.
 
 ## Features
 
@@ -13,13 +13,15 @@ A modern, user-friendly form builder application built with Next.js, TypeScript,
 - **CSV Export**: Export form responses to CSV format
 - **Dark Mode**: Built-in dark mode support
 - **Responsive Design**: Works on desktop and mobile devices
+- **Drag-and-Drop**: Intuitive form builder interface using @hello-pangea/dnd
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Clerk (using @clerk/nextjs and @clerk/backend)
+- **Frontend**: Next.js 15 with Turbopack, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, shadcn/ui components
+- **Database**: PostgreSQL with Prisma ORM 6.5
+- **Authentication**: Clerk (@clerk/nextjs v6.12.12 and @clerk/backend v1.25.8)
+- **Form Management**: React Hook Form v7.55.0 with Zod validation
 - **File Storage**: Local file system with proper path handling
 - **Deployment**: Vercel, PM2 (for custom server deployments)
 
@@ -27,7 +29,7 @@ A modern, user-friendly form builder application built with Next.js, TypeScript,
 
 ### Prerequisites
 
-- Node.js 18.x or later
+- Node.js 20.x or later
 - PostgreSQL database
 - Clerk account for authentication
 
@@ -35,8 +37,8 @@ A modern, user-friendly form builder application built with Next.js, TypeScript,
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/simplyrk/form-builder.git
-cd form-builder
+git clone https://github.com/yourusername/cursor-crm.git
+cd cursor-crm
 ```
 
 2. Install dependencies:
@@ -48,7 +50,7 @@ npm install
 Create a `.env` file in the root directory with the following variables:
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/form_builder"
+DATABASE_URL="postgresql://user:password@localhost:5432/cursor_crm"
 
 # Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
@@ -75,8 +77,6 @@ This project uses Clerk for authentication. We're using the following Clerk pack
 
 - `@clerk/nextjs`: For Next.js integration
 - `@clerk/backend`: For server-side operations
-
-> **Note**: The deprecated `@clerk/clerk-sdk-node` package has been replaced with `@clerk/backend` as per Clerk's recommendations. This change was made to address the deprecation notice issued on October 8, 2024.
 
 ## Production Deployment
 
@@ -106,53 +106,24 @@ PM2 is a production process manager for Node.js applications with a built-in loa
 npm install -g pm2
 ```
 
-2. Create a PM2 ecosystem file (ecosystem.config.js):
+2. The project includes a PM2 ecosystem file (ecosystem.config.js). Start the application with PM2:
 ```bash
-touch ecosystem.config.js
+npm run pm2:start
 ```
 
-3. Add the following configuration to ecosystem.config.js:
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'form-builder',
-      script: 'server.js',
-      instances: 'max', // Use all available CPU cores
-      exec_mode: 'cluster',
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 80
-      }
-    }
-  ]
-};
-```
-
-4. Start the application with PM2:
-```bash
-pm2 start ecosystem.config.js
-```
-
-5. Other useful PM2 commands:
+3. Other useful PM2 commands:
 ```bash
 # Monitor your application
-pm2 monit
+npm run pm2:monit
 
 # View logs
-pm2 logs
+npm run pm2:logs
 
 # Restart application
-pm2 restart form-builder
+npm run pm2:restart
 
 # Stop application
-pm2 stop form-builder
-
-# Delete application from PM2
-pm2 delete form-builder
+npm run pm2:stop
 
 # Save the current process list to start on system reboot
 pm2 save
@@ -177,7 +148,7 @@ npm run custom-server
 
 Or with PM2:
 ```bash
-pm2 start server.js --name "form-builder"
+pm2 start server.js --name "cursor-crm"
 ```
 
 ## Project Structure
@@ -189,86 +160,35 @@ src/
 │   ├── forms/             # Form routes
 │   └── sign-in/           # Authentication routes
 ├── components/            # Reusable components
-│   ├── ui/               # UI components
+│   ├── ui/               # UI components (shadcn/ui)
 │   └── form-builder/     # Form builder components
-├── lib/                  # Utility functions
-│   ├── prisma.ts        # Prisma client
-│   └── file-upload.ts   # File upload handling
-├── types/               # TypeScript types
-└── actions/             # Server actions
+├── lib/                   # Utility functions
+│   ├── prisma.ts         # Prisma client
+│   └── file-upload.ts    # File upload handling
+├── types/                # TypeScript types
+└── middleware.ts         # Clerk authentication middleware
 ```
 
-## Key Features
+## Database Schema
 
-### Form Builder
-- Drag-and-drop form field arrangement
-- Multiple field types:
-  - Text input
-  - Textarea
-  - Date picker
-  - File upload
-  - Checkbox
-  - Radio buttons
-  - Select dropdown
-- Field validation and requirements
-- Real-time preview
+The application uses a PostgreSQL database with the following models:
 
-### Response Management
-- View and manage form responses
-- Export responses to CSV
-- Edit responses
-- Delete responses
-- File upload handling with proper path management
-
-### Admin Features
-- Create and manage forms
-- View form statistics
-- Manage form access
-- Export response data
-- Edit any response
-
-### File Handling
-- Secure file uploads
-- File type validation
-- File size limits
-- Proper file path handling
-- File deletion support
-
-## API Documentation
-
-### Form Actions
-
-#### `createForm(data: FormInput)`
-Creates a new form with the provided data.
-
-#### `updateForm(id: string, data: FormInput)`
-Updates an existing form with new data.
-
-#### `toggleFormPublish(formId: string)`
-Toggles the published state of a form.
-
-#### `deleteForm(formId: string)`
-Deletes a form and all its associated data.
-
-#### `updateResponse(responseId: string, fieldValues: Record<string, any> | FormData)`
-Updates a form response with new field values.
-
-### File Upload
-
-#### `handleFileUpload(file: File)`
-Handles file uploads with proper path management and metadata tracking.
+- **Form**: Represents a form with title, description, and publishing status
+- **Field**: Form fields with different types (text, textarea, date, etc.)
+- **Response**: Form submissions from users
+- **ResponseField**: Individual field responses, including file uploads
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## Security
+
+For security concerns, please see our [Security Policy](SECURITY.md).
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
 
 ## Acknowledgments
 

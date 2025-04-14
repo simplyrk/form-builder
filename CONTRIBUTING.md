@@ -1,6 +1,6 @@
-# Contributing to Form Builder
+# Contributing to Cursor CRM
 
-Thank you for your interest in contributing to Form Builder! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to Cursor CRM! This document provides guidelines and instructions for contributing to the project.
 
 ## Code of Conduct
 
@@ -9,7 +9,7 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a r
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/form-builder.git`
+2. Clone your fork: `git clone https://github.com/your-username/cursor-crm.git`
 3. Create a new branch: `git checkout -b feature/your-feature-name`
 4. Install dependencies: `npm install`
 5. Set up environment variables (see README.md)
@@ -83,6 +83,43 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a r
 - Validate user input
 - Sanitize data
 - Use proper authentication and authorization
+- Follow the guidelines in our [Security Policy](SECURITY.md)
+
+### Technology Stack
+
+Please stick to the following technologies when contributing:
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, shadcn/ui components
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Clerk
+- **Form Management**: React Hook Form with Zod validation
+
+## Development Setup
+
+### Database Setup
+
+1. Install PostgreSQL locally
+2. Create a new database for the project
+3. Update your `.env` file with the database connection string
+4. Run migrations with `npx prisma db push`
+
+### Running in Development Mode
+
+```bash
+# Start the development server with Turbopack
+npm run dev
+```
+
+### Building for Production
+
+```bash
+# Build the application
+npm run build
+
+# Start the production server
+npm run start
+```
 
 ## Questions?
 
@@ -95,4 +132,4 @@ If you have any questions, please:
 
 ## License
 
-By contributing to Form Builder, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE). 
+By contributing to Cursor CRM, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE). 

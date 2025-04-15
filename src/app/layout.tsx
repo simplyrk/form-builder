@@ -1,14 +1,7 @@
-import { Poppins } from 'next/font/google';
 import { Logo } from '@/components/logo';
 import { Navbar } from '@/components/navbar';
 import { Providers } from '@/components/providers';
 import './globals.css';
-
-const poppins = Poppins({ 
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-});
 
 export const metadata = {
   title: 'Form Builder',
@@ -22,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={poppins.className}>
+      <body className="font-poppins">
         <Providers>
           <div className="min-h-screen bg-background">
             <header className="border-b">

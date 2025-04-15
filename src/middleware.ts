@@ -1,10 +1,21 @@
+/**
+ * Authentication middleware for the Cursor CRM application.
+ * Uses Clerk to handle authentication and route protection.
+ * 
+ * Routes can be made public by adding them to the exclusion list in this file.
+ * By default, all routes require authentication unless explicitly excluded.
+ */
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// This example protects all routes including api/trpc routes
-// Please edit this to allow other routes to be public as needed.
-// See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your middleware
+/**
+ * Clerk middleware configuration to protect routes.
+ * 
+ * @param auth - The auth object from Clerk
+ * @param req - The request object from Next.js
+ * @returns void - Returns nothing for public routes, continues auth checks for protected routes
+ */
 export default clerkMiddleware((auth, req) => {
-  // Allow public access to these routes
+  // Public routes that can be accessed without authentication
   if (
     req.nextUrl.pathname === "/" ||
     req.nextUrl.pathname.startsWith("/signin") ||
@@ -18,6 +29,10 @@ export default clerkMiddleware((auth, req) => {
   }
 });
 
+/**
+ * Configuration for the middleware matcher.
+ * Specifies which routes should be processed by this middleware.
+ */
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 }; 

@@ -7,6 +7,7 @@ import { Form } from '@/types/form';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { submitResponse, updateResponse } from '@/app/actions/forms';
+import { log, error } from '@/utils/logger';
 
 type FieldValue = {
   text: string;
@@ -68,7 +69,7 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
     setError(null);
 
     try {
-      console.log('Starting form submission...');
+      log('Starting form submission...');
       // Use the formData state instead of creating a new FormData object
       // This ensures we're using the values from our controlled components
       const processedData: Record<string, string | string[] | File> = {};
@@ -87,10 +88,10 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
         }
       });
 
-      console.log('Processed form data:', processedData);
+      log('Processed form data:', processedData);
 
       if (responseId) {
-        console.log('Updating existing response...');
+        log('Updating existing response...');
         // For updates, we need to use FormData for file uploads
         const formDataObj = new FormData();
         
@@ -107,7 +108,7 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
         
         // Update existing response
         const result = await updateResponse(form.id, responseId, formDataObj);
-        console.log('Update response result:', result);
+        log('Update response result:', result);
         
         if (result.success) {
           toast({
@@ -119,10 +120,10 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
           throw new Error(result.error || 'Failed to update response');
         }
       } else {
-        console.log('Submitting new response...');
+        log('Submitting new response...');
         // Submit new response
         const result = await submitResponse(form.id, processedData);
-        console.log('Submit response result:', result);
+        log('Submit response result:', result);
         
         if (result.success) {
           toast({
@@ -135,7 +136,7 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
         }
       }
     } catch (err) {
-      console.error('Error submitting form:', err);
+      error('Error submitting form:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit response');
       toast({
         title: 'Error',

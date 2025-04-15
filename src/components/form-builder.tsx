@@ -12,11 +12,26 @@ import { createForm, updateForm } from '@/app/actions/forms';
 import type { Form, FormInput, FieldInput } from '@/types/form';
 import { toast } from 'sonner';
 
+/**
+ * Props for the FormBuilder component
+ * 
+ * @property {Form} [form] - Optional existing form to edit. If not provided, a new form will be created.
+ * @property {() => void} [onSuccess] - Optional callback to execute after successful form creation/update.
+ */
 interface FormBuilderProps {
   form?: Form;
   onSuccess?: () => void;
 }
 
+/**
+ * FormBuilder Component
+ * 
+ * A comprehensive form builder that allows users to create and edit forms.
+ * Supports draggable field reordering, field editing, and form submission.
+ * 
+ * @param {FormBuilderProps} props - Component props
+ * @returns {JSX.Element} - Rendered form builder component
+ */
 export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +47,10 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
     })) || []
   );
 
+  /**
+   * Adds a new field to the form
+   * Initializes with default values and increments the order
+   */
   const handleAddField = () => {
     setFields([
       ...fields,
@@ -45,16 +64,33 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
     ]);
   };
 
+  /**
+   * Removes a field from the form at the specified index
+   * 
+   * @param {number} index - The index of the field to remove
+   */
   const handleRemoveField = (index: number) => {
     setFields(fields.filter((_, i) => i !== index));
   };
 
+  /**
+   * Updates a field's properties at the specified index
+   * 
+   * @param {number} index - The index of the field to update
+   * @param {Partial<FieldInput>} field - Partial field properties to update
+   */
   const handleFieldChange = (index: number, field: Partial<FieldInput>) => {
     const newFields = [...fields];
     newFields[index] = { ...newFields[index], ...field };
     setFields(newFields);
   };
 
+  /**
+   * Handles the drag and drop reordering of fields
+   * Updates the order property of each field after reordering
+   * 
+   * @param {DropResult} result - The result of the drag operation from react-beautiful-dnd
+   */
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
@@ -65,6 +101,12 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
     setFields(items.map((item, index) => ({ ...item, order: index })));
   };
 
+  /**
+   * Handles form submission
+   * Creates a new form or updates an existing one
+   * 
+   * @param {React.FormEvent} e - The form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -76,9 +118,11 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
       };
 
       if (form) {
+        // Update existing form
         await updateForm(form.id, formData);
         toast.success('Form updated successfully');
       } else {
+        // Create new form
         await createForm(formData);
         toast.success('Form created successfully');
       }

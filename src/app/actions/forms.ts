@@ -14,6 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import { z } from 'zod';
+import { log, error } from '@/utils/logger';
 
 interface FileUploadResult {
   path: string;
@@ -286,7 +287,6 @@ export async function deleteResponses(formId: string, responseIds: string[]) {
 
 async function handleFileUpload(file: File): Promise<FileUploadResult> {
   try {
-    // Create a unique filename
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
@@ -297,7 +297,7 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     const filePath = path.join(uploadDir, filename);
     
-    console.log('Uploading file:', file.name, 'to path:', filePath);
+    log('Uploading file:', file.name, 'to path:', filePath);
     
     // Ensure uploads directory exists
     await fsPromises.mkdir(uploadDir, { recursive: true });
@@ -305,7 +305,7 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     // Write the file
     await fsPromises.writeFile(filePath, buffer);
     
-    console.log('File uploaded successfully');
+    log('File uploaded successfully');
     
     return {
       path: `uploads/${filename}`,
@@ -313,8 +313,8 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
       fileSize: file.size,
       mimeType: file.type
     };
-  } catch (error) {
-    console.error('Error uploading file:', error);
+  } catch (error: any) {
+    error('Error uploading file:', error);
     throw new Error('Failed to upload file');
   }
 }
@@ -432,8 +432,8 @@ export async function updateResponse(formId: string, responseId: string, data: F
     revalidatePath(`/forms/${formId}/responses/${responseId}/edit`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error updating response:', error);
+  } catch (error: any) {
+    error('Error updating response:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Failed to update response' 

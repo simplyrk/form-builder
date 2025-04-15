@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
 import { auth } from '@clerk/nextjs/server';
+import { log, error } from '@/utils/logger';
 
 /**
  * API handler for serving files
@@ -21,11 +22,11 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Construct the full path to the file
     const fullPath = path.join(process.cwd(), 'public', filePath);
     
-    console.log(`Looking for file at: ${fullPath}`);
+    log(`Looking for file at: ${fullPath}`);
     
     // Check if the file exists
     if (!fs.existsSync(fullPath)) {
-      console.error(`File not found: ${fullPath}`);
+      error(`File not found: ${fullPath}`);
       return new NextResponse('File not found', { status: 404 });
     }
     
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Get the filename from the path
     const fileName = path.basename(fullPath);
     
-    console.log(`Serving file: ${fileName} with content type: ${contentType}`);
+    log(`Serving file: ${fileName} with content type: ${contentType}`);
     
     // Return the file with the appropriate content type
     return new NextResponse(fileBuffer, {
@@ -62,8 +63,8 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         'Content-Disposition': `inline; filename="${fileName}"`,
       },
     });
-  } catch (error) {
-    console.error('Error serving file:', error);
+  } catch (error: any) {
+    error('Error serving file:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 } 

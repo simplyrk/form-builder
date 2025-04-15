@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
+import { log, error } from '@/utils/logger';
 
 /**
  * Props for the AdminEditResponseForm component
@@ -115,7 +116,7 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
   };
 
   /**
-   * Handles file upload to the server
+   * Handles file uploads by sending the file to the upload API
    * @param {File} file - The file to upload
    * @returns {Promise<{filePath: string, fileName: string, fileSize: string, mimeType: string}>} The uploaded file data
    * @throws {Error} If the upload fails
@@ -125,7 +126,7 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
       const formData = new FormData();
       formData.append('file', file);
 
-      console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+      log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
 
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
@@ -134,15 +135,15 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json().catch(() => ({}));
-        console.error('Upload failed with status:', uploadResponse.status, 'Error:', errorData);
+        error('Upload failed with status:', uploadResponse.status, 'Error:', errorData);
         throw new Error(`Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
       }
 
       const data = await uploadResponse.json();
-      console.log('Upload successful:', data);
+      log('Upload successful:', data);
       return data;
-    } catch (error) {
-      console.error('Error uploading file:', error);
+    } catch (error: any) {
+      error('Error uploading file:', error);
       throw error;
     }
   };

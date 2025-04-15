@@ -1,6 +1,6 @@
 # Cursor CRM
 
-A modern, user-friendly form builder and CRM application built with Next.js 15, TypeScript, and Prisma. This application allows users to create, manage, and collect responses for custom forms.
+A modern & lightweight tool for creating and managing forms with support for various field types including text, text areas, date and file uploads.
 
 ## Features
 
@@ -37,8 +37,8 @@ A modern, user-friendly form builder and CRM application built with Next.js 15, 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/cursor-crm.git
-cd cursor-crm
+git clone https://github.com/simplyrk/form-builder.git
+cd form-builder
 ```
 
 2. Install dependencies:
@@ -177,6 +177,78 @@ The application uses a PostgreSQL database with the following models:
 - **Field**: Form fields with different types (text, textarea, date, etc.)
 - **Response**: Form submissions from users
 - **ResponseField**: Individual field responses, including file uploads
+
+## Testing
+
+The project uses Jest and React Testing Library for testing. Tests are located in the `src/__tests__` directory and are organized by category.
+
+### Testing Stack
+
+- **Jest**: Testing framework for JavaScript
+- **React Testing Library**: Library for testing React components
+- **@testing-library/jest-dom**: Custom jest matchers for DOM testing
+- **Jest Environment JSDOM**: DOM environment for Jest
+
+### Test Structure
+
+Tests are organized into the following categories:
+
+- **Unit Tests**: Testing individual functions and utilities
+  - `src/__tests__/lib/`: Tests for utility functions and library code
+- **API Tests**: Testing API routes and endpoints
+  - `src/__tests__/api/`: Tests for API handlers
+- **Component Tests**: Testing React components
+  - `src/__tests__/pages/`: Tests for page components
+  - `src/__tests__/components/`: Tests for UI components
+
+### Running Tests
+
+Run all tests:
+```bash
+npm test
+```
+
+Run specific test suites:
+```bash
+# Test utility functions
+npm run test:utils
+
+# Test file upload functionality
+npm run test:file-upload
+
+# Test Prisma database client
+npm run test:prisma
+
+# Test API endpoints
+npm run test:api
+
+# Test homepage components
+npm run test:home
+```
+
+Run tests in watch mode (useful during development):
+```bash
+npm run test:watch
+```
+
+Generate test coverage report:
+```bash
+npm run test:coverage
+```
+
+### Test Coverage
+
+Test coverage reports are generated in the `coverage` directory. The project aims for at least 80% code coverage across all files.
+
+### Testing Best Practices
+
+When adding new features, please follow these testing guidelines:
+
+1. Write tests for all new features and bug fixes
+2. Ensure tests are isolated and don't depend on external services
+3. Mock external dependencies when necessary
+4. Keep tests focused on behavior, not implementation details
+5. Maintain high test coverage, especially for critical application logic
 
 ## Contributing
 

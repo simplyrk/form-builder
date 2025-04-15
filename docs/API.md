@@ -2,15 +2,64 @@
 
 This document outlines the available API endpoints in the Cursor CRM application.
 
+## API Version
+
+Current API version: `v1`
+
+All API endpoints are prefixed with `/api/v1` unless otherwise specified.
+
 ## Authentication
 
-Authentication is handled by Clerk. API routes are protected using middleware that verifies the authentication token.
+Authentication is handled by Clerk. API routes are protected using middleware that verifies the authentication token. Protected routes require a valid JWT token in the Authorization header.
+
+```
+Authorization: Bearer your-jwt-token
+```
+
+Public routes are explicitly defined in the middleware configuration and do not require authentication.
+
+## Response Format
+
+All API responses follow a standard format:
+
+```json
+{
+  "success": true,
+  "data": {}, // Response data specific to the endpoint
+  "error": null // Error message in case of failure
+}
+```
+
+In case of errors:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "message": "Error message",
+    "code": "ERROR_CODE"
+  }
+}
+```
+
+## Error Codes
+
+Common error codes:
+
+- `UNAUTHORIZED`: User is not authenticated
+- `FORBIDDEN`: User doesn't have permission to access the resource
+- `NOT_FOUND`: Resource not found
+- `VALIDATION_ERROR`: Request validation failed
+- `SERVER_ERROR`: Internal server error
 
 ## Form API
 
 ### Create Form
 
 **Endpoint:** `POST /api/forms`
+
+**Authentication:** Required
 
 **Description:** Creates a new form
 
@@ -39,13 +88,17 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 **Response:**
 ```json
 {
-  "id": "clk5y73wt0000rx3xh9q7a2f1",
-  "title": "Customer Feedback",
-  "description": "Please provide your feedback on our service",
-  "published": false,
-  "createdAt": "2024-05-15T12:00:00.000Z",
-  "updatedAt": "2024-05-15T12:00:00.000Z",
-  "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2"
+  "success": true,
+  "data": {
+    "id": "clk5y73wt0000rx3xh9q7a2f1",
+    "title": "Customer Feedback",
+    "description": "Please provide your feedback on our service",
+    "published": false,
+    "createdAt": "2024-05-15T12:00:00.000Z",
+    "updatedAt": "2024-05-15T12:00:00.000Z",
+    "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2"
+  },
+  "error": null
 }
 ```
 
@@ -53,12 +106,50 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 
 **Endpoint:** `GET /api/forms`
 
+**Authentication:** Required
+
 **Description:** Retrieves all forms created by the authenticated user
+
+**Query Parameters:**
+- `published` (optional): Filter by published status (true/false)
+- `limit` (optional): Limit the number of results
+- `offset` (optional): Offset for pagination
 
 **Response:**
 ```json
-[
-  {
+{
+  "success": true,
+  "data": [
+    {
+      "id": "clk5y73wt0000rx3xh9q7a2f1",
+      "title": "Customer Feedback",
+      "description": "Please provide your feedback on our service",
+      "published": true,
+      "createdAt": "2024-05-15T12:00:00.000Z",
+      "updatedAt": "2024-05-15T12:00:00.000Z",
+      "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
+      "_count": {
+        "responses": 5
+      }
+    }
+  ],
+  "error": null
+}
+```
+
+### Get Form
+
+**Endpoint:** `GET /api/forms/:id`
+
+**Authentication:** Required for unpublished forms, optional for published forms
+
+**Description:** Retrieves a specific form by ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
     "id": "clk5y73wt0000rx3xh9q7a2f1",
     "title": "Customer Feedback",
     "description": "Please provide your feedback on our service",
@@ -66,55 +157,36 @@ Authentication is handled by Clerk. API routes are protected using middleware th
     "createdAt": "2024-05-15T12:00:00.000Z",
     "updatedAt": "2024-05-15T12:00:00.000Z",
     "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-    "_count": {
-      "responses": 5
-    }
-  }
-]
-```
-
-### Get Form
-
-**Endpoint:** `GET /api/forms/:id`
-
-**Description:** Retrieves a specific form by ID
-
-**Response:**
-```json
-{
-  "id": "clk5y73wt0000rx3xh9q7a2f1",
-  "title": "Customer Feedback",
-  "description": "Please provide your feedback on our service",
-  "published": true,
-  "createdAt": "2024-05-15T12:00:00.000Z",
-  "updatedAt": "2024-05-15T12:00:00.000Z",
-  "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-  "fields": [
-    {
-      "id": "clk5y73wt0001rx3x8q7a2f2",
-      "label": "Name",
-      "type": "text",
-      "required": true,
-      "options": [],
-      "order": 0,
-      "formId": "clk5y73wt0000rx3xh9q7a2f1"
-    },
-    {
-      "id": "clk5y73wt0002rx3x8q7a2f3",
-      "label": "Email",
-      "type": "text",
-      "required": true,
-      "options": [],
-      "order": 1,
-      "formId": "clk5y73wt0000rx3xh9q7a2f1"
-    }
-  ]
+    "fields": [
+      {
+        "id": "clk5y73wt0001rx3x8q7a2f2",
+        "label": "Name",
+        "type": "text",
+        "required": true,
+        "options": [],
+        "order": 0,
+        "formId": "clk5y73wt0000rx3xh9q7a2f1"
+      },
+      {
+        "id": "clk5y73wt0002rx3x8q7a2f3",
+        "label": "Email",
+        "type": "text",
+        "required": true,
+        "options": [],
+        "order": 1,
+        "formId": "clk5y73wt0000rx3xh9q7a2f1"
+      }
+    ]
+  },
+  "error": null
 }
 ```
 
 ### Update Form
 
 **Endpoint:** `PUT /api/forms/:id`
+
+**Authentication:** Required
 
 **Description:** Updates an existing form
 
@@ -145,13 +217,17 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 **Response:**
 ```json
 {
-  "id": "clk5y73wt0000rx3xh9q7a2f1",
-  "title": "Updated Customer Feedback",
-  "description": "Updated description",
-  "published": true,
-  "createdAt": "2024-05-15T12:00:00.000Z",
-  "updatedAt": "2024-05-15T13:00:00.000Z",
-  "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2"
+  "success": true,
+  "data": {
+    "id": "clk5y73wt0000rx3xh9q7a2f1",
+    "title": "Updated Customer Feedback",
+    "description": "Updated description",
+    "published": true,
+    "createdAt": "2024-05-15T12:00:00.000Z",
+    "updatedAt": "2024-05-15T13:00:00.000Z",
+    "createdBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2"
+  },
+  "error": null
 }
 ```
 
@@ -159,13 +235,19 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 
 **Endpoint:** `PATCH /api/forms/:id/publish`
 
+**Authentication:** Required
+
 **Description:** Toggles the published status of a form
 
 **Response:**
 ```json
 {
-  "id": "clk5y73wt0000rx3xh9q7a2f1",
-  "published": false
+  "success": true,
+  "data": {
+    "id": "clk5y73wt0000rx3xh9q7a2f1",
+    "published": false
+  },
+  "error": null
 }
 ```
 
@@ -173,9 +255,18 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 
 **Endpoint:** `DELETE /api/forms/:id`
 
+**Authentication:** Required
+
 **Description:** Deletes a form and all associated data
 
-**Response:** `204 No Content`
+**Response:** 
+```json
+{
+  "success": true,
+  "data": null,
+  "error": null
+}
+```
 
 ## Response API
 
@@ -183,9 +274,12 @@ Authentication is handled by Clerk. API routes are protected using middleware th
 
 **Endpoint:** `POST /api/forms/:id/responses`
 
+**Authentication:** Optional
+
 **Description:** Submits a response to a form
 
 **Request Body:**
+For JSON submissions:
 ```json
 {
   "fields": {
@@ -200,10 +294,14 @@ For file uploads, use `multipart/form-data` format.
 **Response:**
 ```json
 {
-  "id": "clk5y73wt0003rx3xh9q7a2f4",
-  "formId": "clk5y73wt0000rx3xh9q7a2f1",
-  "submittedBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-  "createdAt": "2024-05-15T14:00:00.000Z"
+  "success": true,
+  "data": {
+    "id": "clk5y73wt0003rx3x8q7a2f4",
+    "formId": "clk5y73wt0000rx3xh9q7a2f1",
+    "createdAt": "2024-05-15T14:00:00.000Z",
+    "userId": null
+  },
+  "error": null
 }
 ```
 
@@ -211,96 +309,79 @@ For file uploads, use `multipart/form-data` format.
 
 **Endpoint:** `GET /api/forms/:id/responses`
 
+**Authentication:** Required
+
 **Description:** Retrieves all responses for a specific form
+
+**Query Parameters:**
+- `limit` (optional): Limit the number of results
+- `offset` (optional): Offset for pagination
+- `sort` (optional): Sort by field (default: createdAt)
+- `order` (optional): Sort order (asc/desc, default: desc)
 
 **Response:**
 ```json
-[
-  {
-    "id": "clk5y73wt0003rx3xh9q7a2f4",
-    "formId": "clk5y73wt0000rx3xh9q7a2f1",
-    "submittedBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-    "createdAt": "2024-05-15T14:00:00.000Z",
-    "fields": [
+{
+  "success": true,
+  "data": {
+    "responses": [
       {
-        "id": "clk5y73wt0004rx3xh9q7a2f5",
-        "responseId": "clk5y73wt0003rx3xh9q7a2f4",
-        "fieldId": "clk5y73wt0001rx3x8q7a2f2",
-        "value": "John Doe"
-      },
-      {
-        "id": "clk5y73wt0005rx3xh9q7a2f6",
-        "responseId": "clk5y73wt0003rx3xh9q7a2f4",
-        "fieldId": "clk5y73wt0002rx3x8q7a2f3",
-        "value": "john@example.com"
+        "id": "clk5y73wt0003rx3x8q7a2f4",
+        "formId": "clk5y73wt0000rx3xh9q7a2f1",
+        "createdAt": "2024-05-15T14:00:00.000Z",
+        "userId": null,
+        "fields": {
+          "clk5y73wt0001rx3x8q7a2f2": "John Doe",
+          "clk5y73wt0002rx3x8q7a2f3": "john@example.com"
+        }
       }
-    ]
-  }
-]
+    ],
+    "total": 1
+  },
+  "error": null
+}
 ```
 
-### Get Response
+### Get Response Details
 
 **Endpoint:** `GET /api/responses/:id`
 
-**Description:** Retrieves a specific response by ID
+**Authentication:** Required
+
+**Description:** Retrieves details of a specific response
 
 **Response:**
 ```json
 {
-  "id": "clk5y73wt0003rx3xh9q7a2f4",
-  "formId": "clk5y73wt0000rx3xh9q7a2f1",
-  "submittedBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-  "createdAt": "2024-05-15T14:00:00.000Z",
-  "fields": [
-    {
-      "id": "clk5y73wt0004rx3xh9q7a2f5",
-      "responseId": "clk5y73wt0003rx3xh9q7a2f4",
-      "fieldId": "clk5y73wt0001rx3x8q7a2f2",
-      "value": "John Doe",
-      "field": {
-        "label": "Full Name",
-        "type": "text"
-      }
+  "success": true,
+  "data": {
+    "id": "clk5y73wt0003rx3x8q7a2f4",
+    "formId": "clk5y73wt0000rx3xh9q7a2f1",
+    "createdAt": "2024-05-15T14:00:00.000Z",
+    "userId": null,
+    "form": {
+      "title": "Customer Feedback"
     },
-    {
-      "id": "clk5y73wt0005rx3xh9q7a2f6",
-      "responseId": "clk5y73wt0003rx3xh9q7a2f4",
-      "fieldId": "clk5y73wt0002rx3x8q7a2f3",
-      "value": "john@example.com",
-      "field": {
-        "label": "Email Address",
-        "type": "text"
+    "fields": [
+      {
+        "fieldId": "clk5y73wt0001rx3x8q7a2f2",
+        "value": "John Doe",
+        "field": {
+          "label": "Name",
+          "type": "text"
+        }
+      },
+      {
+        "fieldId": "clk5y73wt0002rx3x8q7a2f3",
+        "value": "john@example.com",
+        "field": {
+          "label": "Email",
+          "type": "text"
+        }
       }
-    }
-  ]
-}
-```
-
-### Update Response
-
-**Endpoint:** `PUT /api/responses/:id`
-
-**Description:** Updates an existing response
-
-**Request Body:**
-```json
-{
-  "fields": {
-    "clk5y73wt0001rx3x8q7a2f2": "Jane Doe",
-    "clk5y73wt0002rx3x8q7a2f3": "jane@example.com"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "id": "clk5y73wt0003rx3xh9q7a2f4",
-  "formId": "clk5y73wt0000rx3xh9q7a2f1",
-  "submittedBy": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
-  "createdAt": "2024-05-15T14:00:00.000Z",
-  "updatedAt": "2024-05-15T15:00:00.000Z"
+    ]
+  },
+  "error": null
 }
 ```
 
@@ -308,42 +389,126 @@ For file uploads, use `multipart/form-data` format.
 
 **Endpoint:** `DELETE /api/responses/:id`
 
-**Description:** Deletes a response
+**Authentication:** Required
 
-**Response:** `204 No Content`
-
-## File API
-
-### Upload File
-
-**Endpoint:** `POST /api/upload`
-
-**Description:** Uploads a file to the server
-
-**Request:** Use `multipart/form-data` format with a field named `file`
+**Description:** Deletes a specific response
 
 **Response:**
 ```json
 {
-  "fileName": "original-file-name.pdf",
-  "filePath": "/uploads/1621034567890-original-file-name.pdf",
-  "fileSize": 1048576,
-  "mimeType": "application/pdf"
+  "success": true,
+  "data": null,
+  "error": null
 }
 ```
 
+### Export Responses to CSV
+
+**Endpoint:** `GET /api/forms/:id/responses/export`
+
+**Authentication:** Required
+
+**Description:** Exports all responses for a form to CSV format
+
+**Response:** CSV file download
+
+## File API
+
 ### Get File
 
-**Endpoint:** `GET /uploads/:filePath`
+**Endpoint:** `GET /api/files/:id`
 
-**Description:** Retrieves a file by path (served from static assets)
+**Authentication:** Required
 
-## Export API
+**Description:** Downloads a file attached to a form response
 
-### Export Form Responses as CSV
+**Response:** File download
 
-**Endpoint:** `GET /api/forms/:id/export`
+### Delete File
 
-**Description:** Exports all responses for a form as a CSV file
+**Endpoint:** `DELETE /api/files/:id`
 
-**Response:** CSV file download 
+**Authentication:** Required
+
+**Description:** Deletes a file attached to a form response
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": null,
+  "error": null
+}
+```
+
+## User API
+
+### Get Current User
+
+**Endpoint:** `GET /api/user`
+
+**Authentication:** Required
+
+**Description:** Retrieves information about the current authenticated user
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "user_2Nq9L3U8A8k2k3j2n3k2j3n2",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "error": null
+}
+```
+
+### Get User Forms
+
+**Endpoint:** `GET /api/user/forms`
+
+**Authentication:** Required
+
+**Description:** Retrieves all forms created by the current user
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "clk5y73wt0000rx3xh9q7a2f1",
+      "title": "Customer Feedback",
+      "published": true,
+      "createdAt": "2024-05-15T12:00:00.000Z",
+      "_count": {
+        "responses": 5
+      }
+    }
+  ],
+  "error": null
+}
+```
+
+## Rate Limiting
+
+API requests are rate-limited to prevent abuse. The current limits are:
+
+- 100 requests per minute for authenticated users
+- 20 requests per minute for unauthenticated users
+
+If you exceed the rate limit, you will receive a 429 Too Many Requests response with a Retry-After header indicating when you can try again.
+
+## Webhook Support
+
+The API supports webhooks for real-time notifications when certain events occur. To set up webhooks, contact the administrator.
+
+## API Versioning
+
+The API is versioned to ensure backward compatibility. The current version is v1. When new versions are released, the old versions will be maintained for a period of time to allow for migration.
+
+## Support
+
+For API support, please contact support@cursor-crm.com or open an issue on the GitHub repository. 

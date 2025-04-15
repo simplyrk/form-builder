@@ -6,6 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Field } from '@/types/form';
 
+/**
+ * Type representing the possible values for each field type.
+ * Each key corresponds to a specific form field type, and the value
+ * represents the data type that field would collect.
+ */
 type FieldValue = {
   text: string;
   textarea: string;
@@ -23,8 +28,20 @@ type FieldValue = {
   datetime: string;
 };
 
+/**
+ * Type alias to get the keys of the FieldValue type.
+ * Used to ensure type safety when accessing field values.
+ */
 type FieldType = keyof FieldValue;
 
+/**
+ * Props for the FormField component.
+ * 
+ * @property field - The field configuration object containing type, id, label, etc.
+ * @property value - The current value of the field, typed according to the field type
+ * @property onChange - Callback function to handle value changes
+ * @property disabled - Optional flag to disable the field input
+ */
 interface FormFieldProps {
   field: Field;
   value: FieldValue[FieldType];
@@ -32,7 +49,19 @@ interface FormFieldProps {
   disabled?: boolean;
 }
 
+/**
+ * FormField component that renders different input fields based on the field type.
+ * Supports various input types including text, textarea, select, email, number, etc.
+ * 
+ * @param props - The component props (see FormFieldProps interface)
+ * @returns A form field component with appropriate input type and validation
+ */
 export function FormField({ field, value, onChange, disabled = false }: FormFieldProps) {
+  /**
+   * Renders the appropriate input element based on the field type.
+   * 
+   * @returns The rendered input element
+   */
   const renderField = () => {
     switch (field.type) {
       case 'text':

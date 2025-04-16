@@ -1,4 +1,4 @@
-# Cursor CRM
+# Form Builder
 
 A modern & lightweight tool for creating and managing forms with support for various field types including text, text areas, date and file uploads.
 

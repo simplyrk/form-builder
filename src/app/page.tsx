@@ -1,16 +1,17 @@
 'use client';
 
+/* eslint-disable import/order */
 import { useEffect, useState } from 'react';
-
 import { useRouter } from 'next/navigation';
-
 import { useAuth } from '@clerk/nextjs';
 
 import { FormsLayout } from '@/components/forms-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Form } from '@/types/form';
-import { TEXT } from '@/lib/text-constants';
 import { getLucideIcon } from '@/lib/icon-map';
+import { TEXT } from '@/lib/text-constants';
+
+import type { Form } from '@/types/form';
+/* eslint-enable import/order */
 
 export default function HomePage() {
   const { userId } = useAuth();

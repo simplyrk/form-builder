@@ -21,8 +21,9 @@
     /* Additional checks - more lenient for initial upgrade */
     "noFallthroughCasesInSwitch": true, /* Safer switch statements */
     "allowUnreachableCode": false, /* Catch dead code */
-    "allowUnusedLabels": false, /* Catch unused labels *//* More strict checks commented out for future implementation */
-    // "noImplicitReturns": true,       /* Every code path in a function must return a value */
+    "allowUnusedLabels": false, /* Catch unused labels */
+    /* More strict checks - enable these as issues are resolved */
+    "noImplicitReturns": true,       /* Every code path in a function must return a value */
     // "noUncheckedIndexedAccess": true,/* Add 'undefined' to indexed access results */
     // "noImplicitOverride": true,      /* Ensure overrides are explicit */
     "plugins": [

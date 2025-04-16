@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { TEXT } from '@/lib/text-constants';
+
 import { getLucideIcon } from '@/lib/icon-map';
+import { TEXT } from '@/lib/text-constants';
 
 export function Logo() {
   // Get the app icon from environment variable or use ClipboardList as default

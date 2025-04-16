@@ -13,8 +13,11 @@
     "pm2:restart": "pm2 restart form-builder",
     "pm2:logs": "pm2 logs form-builder",
     "pm2:monit": "pm2 monit",
-    "lint": "next lint --config eslint.config.js",
-    "lint:fix": "next lint --fix --config eslint.config.js",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx .",
+    "lint:fix": "eslint --ext .js,.jsx,.ts,.tsx . --fix",
+    "lint:src": "node scripts/check-src-only.js",
+    "lint:next": "next lint",
+    "lint:imports": "node scripts/fix-imports.js",
     "test": "jest",
     "test:utils": "jest src/__tests__/lib/utils.test.ts",
     "test:file-upload": "jest src/__tests__/lib/file-upload.test.ts",
@@ -22,7 +25,8 @@
     "test:api": "jest src/__tests__/api/forms.test.ts",
     "test:home": "jest src/__tests__/pages/HomePage.test.tsx",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@clerk/backend": "^1.25.8",
@@ -82,6 +86,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "prisma": "^6.5.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.30.1"
   }
 }

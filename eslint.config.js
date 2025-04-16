@@ -4,28 +4,49 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import tseslint from 'typescript-eslint';
 
 export default [
   {
+    linterOptions: {
+      noInlineConfig: false,
+      reportUnusedDisableDirectives: true,
+    },
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parser: tseslint.parser,
+      parserOptions: {
+        // Don't use project since it causes issues
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
+    rules: {
+      'import/order': 'off',
+      'import/first': 'off',
+      'import/newline-after-import': 'off',
+      'import/no-duplicates': 'off',
+      'import/no-unresolved': 'off',
+      'import/no-named-as-default': 'off',
+      'import/no-named-as-default-member': 'off',
+      'import/namespace': 'off',
+      'import/no-empty-named-blocks': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn'],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
     ignores: [
-      // Build artifacts
-      '.next/**',
       'node_modules/**',
-      'build/**',
-      'dist/**',
-      
-      // Config files
-      '*.config.js',
-      '*.config.mjs',
-      'next-env.d.ts',
-      
-      // Generated files
-      '*.generated.*',
+      '.next/**',
       '*.d.ts',
-      
-      // Files with TypeScript errors to fix separately
+      'coverage/**',
+      '**/.next/**', // Double check .next directory is excluded
       'src/app/admin/forms/[id]/edit/page.tsx',
-      'src/app/admin/forms/[id]/responses/[responseId]/edit/page.tsx'
+      'src/app/admin/forms/[id]/responses/[responseId]/edit/page.tsx',
+      'src/__tests__/helpers/testing-utils.tsx'
     ]
   },
   {

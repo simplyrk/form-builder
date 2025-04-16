@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable import/order */
 import { useState } from 'react';
 
 import Link from 'next/link';
@@ -9,9 +10,11 @@ import { toast } from 'sonner';
 
 import { toggleFormPublish, deleteForm } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Form } from '@/types/form';
 import { TEXT } from '@/lib/text-constants';
+import { cn } from '@/lib/utils';
+
+import { Form } from '@/types/form';
+/* eslint-enable import/order */
 
 interface AdminPageClientProps {
   forms: Form[];

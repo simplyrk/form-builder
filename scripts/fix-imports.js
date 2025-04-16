@@ -9,9 +9,14 @@
  * 2. Report progress and issues encountered
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get current directory in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Directories to process
 const directories = [
@@ -73,7 +78,7 @@ function processBatch(files) {
   try {
     // Run ESLint with --fix on the batch of files
     const filePaths = files.join(' ');
-    const command = `npx eslint ${filePaths} --fix --quiet --rule 'import/order: warn'`;
+    const command = `npx eslint ${filePaths} --fix --quiet`;
     
     execSync(command, { stdio: 'pipe' });
     

@@ -5,8 +5,8 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    // We'll handle ESLint separately
-    ignoreDuringBuilds: true,
+    // Run ESLint during builds
+    ignoreDuringBuilds: false,
   },
   experimental: {
     serverActions: {

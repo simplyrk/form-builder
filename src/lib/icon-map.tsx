@@ -1,9 +1,10 @@
 import React from 'react';
+
 // Import specific icons directly
 import { FileText, ClipboardList, Check, File, Settings, Home, Pencil, Box } from 'lucide-react';
 
 // Map of icon names to components
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   FileText,
   File,
   ClipboardList,
@@ -15,7 +16,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 };
 
 // Default icon as fallback
-const DefaultIcon = (props: any) => (
+const DefaultIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width="24" 

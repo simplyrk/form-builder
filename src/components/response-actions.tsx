@@ -1,8 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+
+import { useRouter } from 'next/navigation';
+
 import { Trash2 } from 'lucide-react';
+
+import { deleteResponses } from '@/app/actions/forms';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,15 +18,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { deleteResponses } from '@/app/actions/forms';
-import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 interface ResponseActionsProps {
   selectedResponses: string[];
+  formId: string;
 }
 
-export function ResponseActions({ selectedResponses }: ResponseActionsProps) {
+export function ResponseActions({ selectedResponses, formId }: ResponseActionsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -30,7 +34,7 @@ export function ResponseActions({ selectedResponses }: ResponseActionsProps) {
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await deleteResponses(selectedResponses);
+      await deleteResponses(formId, selectedResponses);
       toast({
         title: 'Success',
         description: `${selectedResponses.length} response(s) deleted successfully.`,

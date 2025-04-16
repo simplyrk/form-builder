@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -14,18 +18,33 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    /* Additional checks - more lenient for initial upgrade */
+    "noFallthroughCasesInSwitch": true, /* Safer switch statements */
+    "allowUnreachableCode": false, /* Catch dead code */
+    "allowUnusedLabels": false, /* Catch unused labels *//* More strict checks commented out for future implementation */
+    // "noImplicitReturns": true,       /* Every code path in a function must return a value */
+    // "noUncheckedIndexedAccess": true,/* Add 'undefined' to indexed access results */
+    // "noImplicitOverride": true,      /* Ensure overrides are explicit */
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
+    ".next",
     "src/app/admin/forms/[id]/edit/page.tsx",
     "src/app/admin/forms/[id]/responses/[responseId]/edit/page.tsx"
   ]

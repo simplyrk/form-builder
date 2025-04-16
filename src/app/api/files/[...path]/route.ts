@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+
+import { NextRequest, NextResponse } from 'next/server';
+
 import { auth } from '@clerk/nextjs/server';
+
 import { log, error } from '@/utils/logger';
 
 /**
@@ -63,8 +66,8 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         'Content-Disposition': `inline; filename="${fileName}"`,
       },
     });
-  } catch (error: any) {
-    error('Error serving file:', error);
+  } catch (errorObj: unknown) {
+    console.error('Error serving file:', errorObj);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 } 

@@ -1,8 +1,12 @@
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import AdminPageClient from './admin-page-client';
+
+import { auth } from '@clerk/nextjs/server';
+
+import { prisma } from '@/lib/prisma';
 import type { Form } from '@/types/form';
+
+import AdminPageClient from './admin-page-client';
+
 
 export default async function AdminPage() {
   const { userId } = await auth();

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
+import { deleteResponses } from '@/app/actions/forms';
+import { ResponseTable } from '@/components/response-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResponseTable } from '@/components/response-table';
-import { deleteResponses } from '@/app/actions/forms';
 import { useToast } from '@/components/ui/use-toast';
 import type { Form, Response } from '@/types/form';
 
@@ -76,7 +78,7 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
         </CardHeader>
         <CardContent>
           {processedResponses.length === 0 ? (
-            <p className="text-muted-foreground">You haven't submitted any responses to this form yet.</p>
+            <p className="text-muted-foreground">You haven&apos;t submitted any responses to this form yet.</p>
           ) : (
             <ResponseTable
               form={form}

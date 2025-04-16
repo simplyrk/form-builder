@@ -1,8 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
+
+import { auth } from '@clerk/nextjs/server';
+
 import { FormSpecificResponses } from '@/components/form-specific-responses';
 import { FormsLayout } from '@/components/forms-layout';
+import { prisma } from '@/lib/prisma';
 import type { Form, Response, ResponseField } from '@/types/form';
 
 interface FormResponsesPageProps {

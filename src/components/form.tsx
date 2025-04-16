@@ -1,17 +1,22 @@
 import { useState } from 'react';
+
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
+
+import { X } from 'lucide-react';
+
+
+import { submitResponse } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { submitResponse } from '@/app/actions/forms';
-import { X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 import type { Form, Field } from '@/types/form';
-import Image from 'next/image';
+
 
 type FieldValue = {
   text: string;
@@ -27,7 +32,7 @@ type FieldValue = {
   file: File | null;
   date: string;
   time: string;
-  datetime: string;
+  'datetime-local': string;
 };
 
 interface FormProps {
@@ -47,22 +52,20 @@ export function Form({ form }: FormProps) {
 
     try {
       // Convert form data to the expected format
-      const processedData: Record<string, string | number | boolean | null> = {};
+      const processedData: Record<string, string | string[] | File> = {};
       for (const [key, value] of Object.entries(formData)) {
         if (value instanceof File) {
-          // Handle file uploads separately
-          const formDataObj = new FormData();
-          formDataObj.append('file', value);
-          // TODO: Implement file upload handling
-          processedData[key] = null;
+          processedData[key] = value;
         } else if (Array.isArray(value)) {
-          processedData[key] = value.join(',');
+          processedData[key] = value;
         } else if (typeof value === 'boolean') {
-          processedData[key] = value;
+          processedData[key] = value ? 'true' : 'false';
         } else if (typeof value === 'number') {
-          processedData[key] = value;
+          processedData[key] = value.toString();
+        } else if (value !== null && value !== undefined) {
+          processedData[key] = value.toString();
         } else {
-          processedData[key] = value?.toString() || null;
+          processedData[key] = '';
         }
       }
 
@@ -134,7 +137,7 @@ export function Form({ form }: FormProps) {
       case 'number':
       case 'date':
       case 'time':
-      case 'datetime':
+      case 'datetime-local':
         return (
           <Input
             type={field.type}
@@ -161,7 +164,7 @@ export function Form({ form }: FormProps) {
       case 'radio':
         return (
           <RadioGroup onValueChange={(value: string) => handleFieldChange(field.id, value as FieldValue[keyof FieldValue])}>
-            {field.options.map(option => (
+            {field.options?.map(option => (
               <div key={option} className="flex items-center space-x-2">
                 <RadioGroupItem value={option} id={`${field.id}-${option}`} />
                 <Label htmlFor={`${field.id}-${option}`}>{option}</Label>
@@ -176,7 +179,7 @@ export function Form({ form }: FormProps) {
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {field.options.map(option => (
+              {field.options?.map(option => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>

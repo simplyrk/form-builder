@@ -2,10 +2,10 @@
 const nextConfig = {
   typescript: {
     // Enable TypeScript checks during build
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    // Enable ESLint checks during build
+    // We'll handle ESLint separately
     ignoreDuringBuilds: true,
   },
   experimental: {
@@ -53,4 +53,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig 
+export default nextConfig; 

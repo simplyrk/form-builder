@@ -1,26 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { createForm, updateForm } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
-import { createForm, updateForm } from '@/app/actions/forms';
-import type { Form, FormInput, FieldInput } from '@/types/form';
-import { toast } from 'sonner';
+import type { Form, FormInput, FieldInput, FormField } from '@/types/form';
+
 
 /**
  * Props for the FormBuilder component
  * 
  * @property {Form} [form] - Optional existing form to edit. If not provided, a new form will be created.
  * @property {() => void} [onSuccess] - Optional callback to execute after successful form creation/update.
+ * @property {(formData: FormInput) => Promise<void>} [onSave] - Optional callback to execute after saving the form.
  */
 interface FormBuilderProps {
   form?: Form;
   onSuccess?: () => void;
+  onSave?: (formData: FormInput) => Promise<void>;
 }
 
 /**
@@ -32,7 +38,7 @@ interface FormBuilderProps {
  * @param {FormBuilderProps} props - Component props
  * @returns {JSX.Element} - Rendered form builder component
  */
-export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
+export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState(form?.title || '');
@@ -111,25 +117,40 @@ export function FormBuilder({ form, onSuccess }: FormBuilderProps) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // Create base form data with all fields
       const formData: FormInput = {
         title,
-        description,
+        description: description || '',
         fields,
+        published: form?.published ?? false,
       };
 
-      if (form) {
-        // Update existing form
-        await updateForm(form.id, formData);
+      if (onSave) {
+        // Use the provided onSave callback
+        await onSave(formData);
+        toast.success('Form saved successfully');
+      } else if (form) {
+        // Update existing form - cast to the required types
+        await updateForm(form.id, {
+          title: formData.title,
+          description: formData.description || '',
+          published: formData.published ?? false,
+          fields: formData.fields as Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[],
+        });
         toast.success('Form updated successfully');
       } else {
-        // Create new form
-        await createForm(formData);
+        // Create new form - cast to the required types
+        await createForm({
+          title: formData.title,
+          description: formData.description || '',
+          fields: formData.fields as Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[],
+        });
         toast.success('Form created successfully');
       }
       
       if (onSuccess) {
         onSuccess();
-      } else {
+      } else if (!onSave) {
         router.back();
         setTimeout(() => {
           router.refresh();

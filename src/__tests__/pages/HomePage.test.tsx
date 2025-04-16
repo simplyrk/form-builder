@@ -1,7 +1,10 @@
-import React, { ReactNode, act } from 'react';
-import { render, screen } from '@testing-library/react';
-import HomePage from '@/app/page';
 import { useAuth } from '@clerk/nextjs';
+import { render, screen } from '@testing-library/react';
+import React, { ReactNode, act } from 'react';
+
+import HomePage from '@/app/page';
+
+
 import { flushPromises } from '../helpers/testing-utils';
 
 // Mock fetch

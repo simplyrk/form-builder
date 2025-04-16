@@ -1,7 +1,9 @@
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+
+import { auth } from '@clerk/nextjs/server';
+
 import { EditResponseForm } from '@/app/forms/[id]/edit/[responseId]/edit-response-form';
+import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
 
 export default async function EditResponsePage({

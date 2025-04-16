@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button } from "@/components/ui/button"
-import { FormField } from './form-field';
-import { Form } from '@/types/form';
-import { useToast } from '@/components/ui/use-toast';
+
 import { useRouter } from 'next/navigation';
+
 import { submitResponse, updateResponse } from '@/app/actions/forms';
+import { Button } from "@/components/ui/button"
+import { useToast } from '@/components/ui/use-toast';
+import { Form } from '@/types/form';
 import { log, error } from '@/utils/logger';
+
+import { FormField } from './form-field';
 
 type FieldValue = {
   text: string;
@@ -23,7 +26,7 @@ type FieldValue = {
   file: File | null;
   date: string;
   time: string;
-  datetime: string;
+  'datetime-local': string;
 };
 
 type ApiFormData = Record<string, string | number | boolean | null>;
@@ -136,7 +139,8 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
         }
       }
     } catch (err) {
-      error('Error submitting form:', err);
+      // Use direct console.error for logging to avoid TypeScript errors
+      console.error('Error submitting form:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit response');
       toast({
         title: 'Error',

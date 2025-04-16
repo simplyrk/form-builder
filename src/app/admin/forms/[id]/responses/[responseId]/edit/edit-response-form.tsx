@@ -7,18 +7,23 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
+import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
-import { Label } from '@/components/ui/label';
-import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
 import { log, error } from '@/utils/logger';
+
+
 
 /**
  * Props for the AdminEditResponseForm component
@@ -142,9 +147,9 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
       const data = await uploadResponse.json();
       log('Upload successful:', data);
       return data;
-    } catch (error: any) {
-      error('Error uploading file:', error);
-      throw error;
+    } catch (errorObj: unknown) {
+      error('Error uploading file:', errorObj);
+      throw errorObj;
     }
   };
 

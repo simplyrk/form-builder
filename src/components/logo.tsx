@@ -1,5 +1,6 @@
-import { ClipboardList } from 'lucide-react';
 import Link from 'next/link';
+
+import { ClipboardList } from 'lucide-react';
 
 export function Logo() {
   return (

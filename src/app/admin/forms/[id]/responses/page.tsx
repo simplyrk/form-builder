@@ -1,9 +1,13 @@
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
+
 import { createClerkClient } from '@clerk/backend';
+import { auth } from '@clerk/nextjs/server';
+
+import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
+
 import { ResponsesClient } from './responses-client';
+
 
 interface FormResponsesPageProps {
   params: {

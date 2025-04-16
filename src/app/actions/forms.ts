@@ -6,15 +6,18 @@
 
 'use server';
 
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
-import { revalidatePath } from 'next/cache';
-import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
+import fs, { promises as fsPromises } from 'fs';
 import path from 'path';
-import fs from 'fs';
-import { promises as fsPromises } from 'fs';
+
+import { revalidatePath } from 'next/cache';
+
+import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
+
+import { prisma } from '@/lib/prisma';
+import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
 import { log, error } from '@/utils/logger';
+
 
 interface FileUploadResult {
   path: string;
@@ -59,7 +62,7 @@ const formFieldSchema = z.object({
  */
 export async function createForm(data: {
   title: string;
-  description: string;
+  description: string | undefined;
   fields: Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[];
 }) {
   try {
@@ -71,7 +74,7 @@ export async function createForm(data: {
     const form = await prisma.form.create({
       data: {
         title: data.title,
-        description: data.description,
+        description: data.description || '',
         published: false,
         createdBy: userId,
         fields: {
@@ -110,7 +113,7 @@ export async function updateForm(
   formId: string,
   data: {
     title: string;
-    description: string;
+    description: string | undefined;
     published: boolean;
     fields: Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[];
   }
@@ -131,7 +134,7 @@ export async function updateForm(
       where: { id: formId },
       data: {
         title: data.title,
-        description: data.description,
+        description: data.description || '',
         published: data.published,
         fields: {
           create: data.fields.map((field, index) => ({
@@ -313,8 +316,8 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
       fileSize: file.size,
       mimeType: file.type
     };
-  } catch (error: any) {
-    error('Error uploading file:', error);
+  } catch (errorObj: unknown) {
+    error('Error uploading file:', errorObj);
     throw new Error('Failed to upload file');
   }
 }
@@ -432,11 +435,11 @@ export async function updateResponse(formId: string, responseId: string, data: F
     revalidatePath(`/forms/${formId}/responses/${responseId}/edit`);
 
     return { success: true };
-  } catch (error: any) {
-    error('Error updating response:', error);
+  } catch (errorObj: unknown) {
+    error('Error updating response:', errorObj);
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : 'Failed to update response' 
+      error: errorObj instanceof Error ? errorObj.message : 'Failed to update response' 
     };
   }
 }

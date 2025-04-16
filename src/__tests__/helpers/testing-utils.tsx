@@ -1,8 +1,8 @@
 /**
  * Helper utilities for testing async component behaviors
  */
-import React, { ReactNode } from 'react';
 import { render } from '@testing-library/react';
+import React, { ReactNode } from 'react';
 import '@testing-library/jest-dom';
 
 /**

@@ -1,8 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import { 
   generateUniqueFilename, 
   validateFile 
 } from '@/lib/file-upload';
-import { v4 as uuidv4 } from 'uuid';
 
 // Mock the uuid module
 jest.mock('uuid', () => ({

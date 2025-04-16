@@ -12,6 +12,8 @@ export interface FormInput {
   title: string;
   /** Optional description of the form */
   description?: string;
+  /** Whether the form is published and accessible */
+  published?: boolean;
   /** Array of form fields */
   fields: FieldInput[];
 }
@@ -27,7 +29,7 @@ export interface FieldInput {
   /** Whether the field is required */
   required: boolean;
   /** Array of options for select/radio/checkbox fields */
-  options: string[];
+  options?: string[];
   /** The order of the field in the form */
   order: number;
 }
@@ -59,6 +61,12 @@ export interface FormField {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/**
+ * Field type alias for backward compatibility
+ * This is used in components that import the Field type
+ */
+export type Field = FormField;
 
 /**
  * Database model for a form

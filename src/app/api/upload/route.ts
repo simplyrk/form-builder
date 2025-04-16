@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import fs from 'fs';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { mkdir } from 'fs/promises';
+import path from 'path';
+
+import { NextRequest, NextResponse } from 'next/server';
+
+import { auth } from '@clerk/nextjs/server';
+import { v4 as uuidv4 } from 'uuid';
+
 
 /**
  * API handler for file uploads

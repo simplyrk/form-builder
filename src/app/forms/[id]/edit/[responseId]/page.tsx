@@ -1,8 +1,12 @@
-import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 import { notFound, redirect } from 'next/navigation';
-import { EditResponseForm } from './edit-response-form';
+
+import { auth } from '@clerk/nextjs/server';
+
+import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
+
+import { EditResponseForm } from './edit-response-form';
+
 
 interface EditResponsePageProps {
   params: {

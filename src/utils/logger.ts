@@ -27,13 +27,13 @@ const isDebugMode = () => {
  * Prints messages to the console only when DEBUG=true.
  * Use this for general debug information during development.
  * 
- * @param {...any} args - Arguments to pass to console.log
+ * @param {...unknown} args - Arguments to pass to console.log
  * @returns {void}
  * @example
  * // Only logs when DEBUG=true
  * log('Initializing component', componentId);
  */
-export const log = (...args: any[]) => {
+export const log = (...args: unknown[]): void => {
   if (isDebugMode()) {
     console.log(...args);
   }
@@ -45,13 +45,13 @@ export const log = (...args: any[]) => {
  * Always prints error messages regardless of DEBUG setting.
  * Use this for critical errors that should always be logged.
  * 
- * @param {...any} args - Arguments to pass to console.error
+ * @param {...unknown} args - Arguments to pass to console.error
  * @returns {void}
  * @example
  * // Always logs, regardless of DEBUG setting
  * error('Failed to connect to database', err);
  */
-export const error = (...args: any[]) => {
+export const error = (...args: unknown[]): void => {
   console.error(...args);
 };
 
@@ -61,13 +61,13 @@ export const error = (...args: any[]) => {
  * Prints warning messages to the console only when DEBUG=true.
  * Use this for non-critical warnings during development.
  * 
- * @param {...any} args - Arguments to pass to console.warn
+ * @param {...unknown} args - Arguments to pass to console.warn
  * @returns {void}
  * @example
  * // Only logs when DEBUG=true
  * warn('Deprecated function used', functionName);
  */
-export const warn = (...args: any[]) => {
+export const warn = (...args: unknown[]): void => {
   if (isDebugMode()) {
     console.warn(...args);
   }
@@ -79,13 +79,13 @@ export const warn = (...args: any[]) => {
  * Prints informational messages to the console only when DEBUG=true.
  * Use this for general informational messages during development.
  * 
- * @param {...any} args - Arguments to pass to console.info
+ * @param {...unknown} args - Arguments to pass to console.info
  * @returns {void}
  * @example
  * // Only logs when DEBUG=true
  * info('User logged in', userId);
  */
-export const info = (...args: any[]) => {
+export const info = (...args: unknown[]): void => {
   if (isDebugMode()) {
     console.info(...args);
   }

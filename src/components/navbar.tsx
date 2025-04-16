@@ -1,11 +1,12 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+
+import { useUser , SignOutButton } from '@clerk/nextjs';
 import { User } from 'lucide-react';
-import { SignOutButton } from '@clerk/nextjs';
+
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Button } from '@/components/ui/button';
 
 export function Navbar() {
   const { user, isSignedIn } = useUser();

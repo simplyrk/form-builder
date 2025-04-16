@@ -1,7 +1,9 @@
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+
+import { auth } from '@clerk/nextjs/server';
+
 import { FormBuilder } from '@/components/form-builder';
+import { prisma } from '@/lib/prisma';
 
 export default async function NewFormPage() {
   const { userId } = await auth();
@@ -28,14 +30,14 @@ export default async function NewFormPage() {
           await prisma.form.create({
             data: {
               title: formData.title,
-              description: formData.description,
+              description: formData.description || '',
               createdBy: userId,
               fields: {
                 create: formData.fields.map((field) => ({
                   label: field.label,
                   type: field.type,
                   required: field.required,
-                  options: field.options,
+                  options: field.options || [],
                   order: field.order,
                 })),
               },

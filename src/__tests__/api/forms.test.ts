@@ -1,3 +1,6 @@
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse, textResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
 // Mock the Prisma client
@@ -16,8 +19,6 @@ jest.mock('@clerk/nextjs/server', () => ({
 
 // Create a mock implementation of the API route handler
 async function mockGET() {
-  const { auth } = require('@clerk/nextjs/server');
-  const { NextResponse, textResponse } = require('next/server');
   const { userId } = await auth();
   
   if (!userId) {
@@ -43,7 +44,7 @@ describe('Forms API', () => {
 
   it('should return 401 if user is not authenticated', async () => {
     // Override the auth mock for this test
-    const authMock = require('@clerk/nextjs/server').auth;
+    const authMock = auth as jest.MockedFunction<typeof auth>;
     authMock.mockResolvedValueOnce({ userId: null });
 
     const response = await mockGET();

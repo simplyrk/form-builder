@@ -72,7 +72,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
   }, [pathname]);
 
   const handleFormClick = (formId: string) => {
-    router.push(`/forms/${formId}`);
+    router.push(`/forms/${formId}/responses`);
   };
   
   const toggleGroupExpanded = (groupName: string) => {

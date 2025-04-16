@@ -330,7 +330,7 @@ npm run build
 
 ### ESLint Configuration
 
-This project uses a dual ESLint configuration approach:
+This project uses a simplified ESLint configuration approach:
 
 1. **Modern ESLint Config (eslint.config.js)**: Contains comprehensive rules for TypeScript, imports, and accessibility.
 2. **Legacy Config (.eslintrc.json)**: Added for Next.js compatibility.

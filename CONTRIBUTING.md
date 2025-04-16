@@ -34,9 +34,9 @@ The project follows a feature-based structure:
 
 ### ESLint
 
-The project uses a dual ESLint configuration:
+The project uses a simplified ESLint configuration:
 
-1. Modern ESM config (`eslint.config.js`) - The primary configuration
+1. Modern ESM config (`eslint.config.js`) - The primary configuration with all ignore patterns
 2. Legacy config (`.eslintrc.json`) - For compatibility with Next.js
 
 Before submitting a PR, ensure your code passes linting:

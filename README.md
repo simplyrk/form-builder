@@ -61,7 +61,8 @@ UPLOAD_DIR="public/uploads"  # Directory for file uploads
 
 # App Configuration
 NEXT_PUBLIC_APP_NAME="Form Builder"  # Used in both the site logo and welcome message
-NEXT_PUBLIC_APP_ICON="ClipboardList"
+NEXT_PUBLIC_APP_ICON="ClipboardList"  # Icon from Lucide React library (https://lucide.dev/icons/)
+NEXT_PUBLIC_WELCOME_ICON="FileText"  # Icon used before the welcome message on homepage
 
 # Configurable Text Strings
 NEXT_PUBLIC_TEXT_MANAGE_FORMS="Manage Forms"

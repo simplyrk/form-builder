@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import React, { ReactNode, act } from 'react';
 
 import HomePage from '@/app/page';
-
+import { TEXT } from '@/lib/text-constants';
 
 import { flushPromises } from '../helpers/testing-utils';
 
@@ -19,6 +19,11 @@ global.fetch = jest.fn();
 // Mock the FormsLayout component
 jest.mock('@/components/forms-layout', () => ({
   FormsLayout: ({ children }: { children: ReactNode }) => <div data-testid="forms-layout">{children}</div>,
+}));
+
+// Mock getLucideIcon
+jest.mock('@/lib/icon-map', () => ({
+  getLucideIcon: () => () => <span data-testid="mock-icon" />,
 }));
 
 // Cast useAuth correctly for the tests
@@ -40,7 +45,7 @@ describe('HomePage', () => {
     });
     
     // Component should return null when not authenticated
-    expect(screen.queryByText(/Welcome to Form Builder/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(TEXT.WELCOME_MESSAGE)).not.toBeInTheDocument();
   });
 
   // Remove the problematic test and replace it

@@ -5,12 +5,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@clerk/nextjs';
-import { FileText } from 'lucide-react';
 
 import { FormsLayout } from '@/components/forms-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Form } from '@/types/form';
 import { TEXT } from '@/lib/text-constants';
+import { getLucideIcon } from '@/lib/icon-map';
 
 export default function HomePage() {
   const { userId } = useAuth();
@@ -72,7 +72,10 @@ export default function HomePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-6 w-6" />
+                {(() => {
+                  const WelcomeIcon = getLucideIcon(TEXT.WELCOME_ICON);
+                  return <WelcomeIcon className="h-6 w-6" />;
+                })()}
                 {TEXT.WELCOME_MESSAGE}
               </CardTitle>
               <CardDescription>

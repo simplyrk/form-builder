@@ -13,4 +13,5 @@ export const TEXT = {
   FORMS_AVAILABLE_MESSAGE: (count: number) => 
     process.env.NEXT_PUBLIC_TEXT_FORMS_AVAILABLE_MESSAGE?.replace('{count}', count.toString()) || 
     `There are ${count} form${count === 1 ? '' : 's'} available.`,
+  WELCOME_ICON: process.env.NEXT_PUBLIC_WELCOME_ICON || 'FileText',
 }; 

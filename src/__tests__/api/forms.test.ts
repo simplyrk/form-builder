@@ -54,8 +54,20 @@ describe('Forms API', () => {
 
   it('should return user forms when authenticated', async () => {
     const mockForms = [
-      { id: '1', name: 'Form 1', createdBy: 'test-user-id', createdAt: new Date() },
-      { id: '2', name: 'Form 2', createdBy: 'test-user-id', createdAt: new Date() },
+      { 
+        id: '1', 
+        name: 'Form 1', 
+        createdBy: 'test-user-id', 
+        createdAt: new Date(),
+        formGroup: 'Test Group'
+      },
+      { 
+        id: '2', 
+        name: 'Form 2', 
+        createdBy: 'test-user-id', 
+        createdAt: new Date(),
+        formGroup: 'Test Group'
+      },
     ];
 
     // Set up the mock return value

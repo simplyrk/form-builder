@@ -17,16 +17,15 @@ interface FormResponsesPageProps {
 
 export default async function FormResponsesPage({ params }: FormResponsesPageProps) {
   const { userId } = await auth();
+  const { id } = await Promise.resolve(params);
+  
   if (!userId) {
     notFound();
   }
 
-  // Properly await the params object as required by Next.js 13+
-  const { id: formId } = await Promise.resolve(params);
-
   // First, check if the form exists and if the user has access to it
   const form = await prisma.form.findUnique({
-    where: { id: formId },
+    where: { id: id },
     include: {
       fields: {
         orderBy: {
@@ -43,7 +42,7 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
 
   // Fetch all responses for this form (admin can see all responses)
   const responses = await prisma.response.findMany({
-    where: { formId },
+    where: { formId: id },
     include: {
       fields: true,
     },

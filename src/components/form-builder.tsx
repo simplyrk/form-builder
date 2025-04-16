@@ -43,6 +43,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState(form?.title || '');
   const [description, setDescription] = useState(form?.description || '');
+  const [formGroup, setFormGroup] = useState(form?.formGroup || '');
   const [fields, setFields] = useState<FieldInput[]>(
     form?.fields.map(f => ({
       label: f.label,
@@ -121,6 +122,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
       const formData: FormInput = {
         title,
         description: description || '',
+        formGroup: formGroup || '',
         fields,
         published: form?.published ?? false,
       };
@@ -134,6 +136,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
         await updateForm(form.id, {
           title: formData.title,
           description: formData.description || '',
+          formGroup: formData.formGroup || '',
           published: formData.published ?? false,
           fields: formData.fields as Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[],
         });
@@ -143,6 +146,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
         await createForm({
           title: formData.title,
           description: formData.description || '',
+          formGroup: formData.formGroup || '',
           fields: formData.fields as Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[],
         });
         toast.success('Form created successfully');
@@ -188,6 +192,19 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            disabled={isSubmitting}
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="formGroup" className="block text-sm font-medium mb-1">
+            Form Group
+          </label>
+          <Input
+            id="formGroup"
+            value={formGroup}
+            onChange={(e) => setFormGroup(e.target.value)}
+            placeholder="Optional - Group forms with the same value"
             disabled={isSubmitting}
           />
         </div>

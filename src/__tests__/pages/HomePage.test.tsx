@@ -9,8 +9,8 @@ import { flushPromises } from '../helpers/testing-utils';
 
 // Mock fetch
 const mockFetchResponse = [
-  { id: '1', name: 'Form 1' },
-  { id: '2', name: 'Form 2' }
+  { id: '1', name: 'Form 1', formGroup: 'Test Group' },
+  { id: '2', name: 'Form 2', formGroup: 'Test Group' }
 ];
 
 // Setup the fetch mock

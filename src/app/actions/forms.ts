@@ -63,6 +63,7 @@ const formFieldSchema = z.object({
 export async function createForm(data: {
   title: string;
   description: string | undefined;
+  formGroup: string | undefined;
   fields: Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[];
 }) {
   try {
@@ -75,6 +76,7 @@ export async function createForm(data: {
       data: {
         title: data.title,
         description: data.description || '',
+        formGroup: data.formGroup || '',
         published: false,
         createdBy: userId,
         fields: {
@@ -113,8 +115,9 @@ export async function updateForm(
   formId: string,
   data: {
     title: string;
-    description: string | undefined;
-    published: boolean;
+    description?: string;
+    formGroup?: string;
+    published?: boolean;
     fields: Omit<FormField, 'id' | 'formId' | 'createdAt' | 'updatedAt'>[];
   }
 ) {
@@ -130,12 +133,21 @@ export async function updateForm(
     });
 
     // Then update the form and create new fields
-    const form = await prisma.form.update({
+    const form = await prisma.form.findUnique({
+      where: { id: formId },
+    });
+
+    if (!form) {
+      throw new Error('Form not found');
+    }
+
+    const updatedForm = await prisma.form.update({
       where: { id: formId },
       data: {
         title: data.title,
         description: data.description || '',
-        published: data.published,
+        formGroup: data.formGroup || '',
+        published: data.published ?? form.published,
         fields: {
           create: data.fields.map((field, index) => ({
             ...field,
@@ -152,7 +164,7 @@ export async function updateForm(
     revalidatePath('/admin');
     revalidatePath(`/forms/${formId}`);
 
-    return { success: true, form };
+    return { success: true, form: updatedForm };
   } catch (error) {
     console.error('Error updating form:', error);
     return { 

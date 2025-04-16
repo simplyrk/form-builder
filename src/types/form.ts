@@ -12,6 +12,8 @@ export interface FormInput {
   title: string;
   /** Optional description of the form */
   description?: string;
+  /** Optional form group for categorizing forms */
+  formGroup?: string;
   /** Whether the form is published and accessible */
   published?: boolean;
   /** Array of form fields */
@@ -78,6 +80,8 @@ export interface Form {
   title: string;
   /** Optional description of the form */
   description: string;
+  /** Optional form group for categorizing forms */
+  formGroup?: string;
   /** Whether the form is published and accessible */
   published: boolean;
   /** When the form was created */

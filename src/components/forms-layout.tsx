@@ -19,13 +19,36 @@ interface FormsLayoutProps {
 export function FormsLayout({ children }: FormsLayoutProps) {
   const [availableForms, setAvailableForms] = useState<Form[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [error, setError] = useState<string | null>(null);
+  const [currentFormId, setCurrentFormId] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<{[key: string]: boolean}>({});
   
-  // Extract form ID from pathname if we're on a form page
-  const currentFormId = pathname.startsWith('/forms/') 
-    ? pathname.split('/')[2] 
-    : null;
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  useEffect(() => {
+    // Extract form id from url if exists
+    const match = pathname.match(/\/forms\/([a-zA-Z0-9-_]+)/);
+    if (match) {
+      setCurrentFormId(match[1]);
+    } else {
+      setCurrentFormId(null);
+    }
+  }, [pathname]);
+  
+  // Initialize expanded groups
+  useEffect(() => {
+    if (availableForms.length > 0) {
+      const groups: {[key: string]: boolean} = {};
+      availableForms.forEach(form => {
+        if (form.formGroup && !groups[form.formGroup]) {
+          // Set all groups expanded by default
+          groups[form.formGroup] = true;
+        }
+      });
+      setExpandedGroups(groups);
+    }
+  }, [availableForms]);
 
   useEffect(() => {
     const fetchAvailableForms = async () => {
@@ -45,16 +68,17 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     };
 
     fetchAvailableForms();
-  }, []);
+  }, [pathname]);
 
   const handleFormClick = (formId: string) => {
-    // If we're already on the form's responses page, navigate to the form page
-    if (pathname === `/forms/${formId}/responses`) {
-      router.push(`/forms/${formId}`);
-    } else {
-      // Otherwise, navigate to the form's responses page
-      router.push(`/forms/${formId}/responses`);
-    }
+    router.push(`/forms/${formId}`);
+  };
+  
+  const toggleGroupExpanded = (groupName: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
   };
 
   return (
@@ -70,28 +94,105 @@ export function FormsLayout({ children }: FormsLayoutProps) {
           ) : availableForms.length === 0 ? (
             <p className="text-sm text-muted-foreground">No forms available</p>
           ) : (
-            <ul className="space-y-1">
-              {availableForms.map((form) => (
-                <li key={form.id}>
-                  <button 
-                    onClick={() => handleFormClick(form.id)}
-                    className={cn(
-                      "flex items-center w-full p-2 rounded-md text-sm transition-colors",
-                      "hover:bg-muted/50",
-                      currentFormId === form.id 
-                        ? "bg-primary/10 text-primary font-medium" 
-                        : "text-foreground"
+            <div className="space-y-4">
+              {/* Group forms by formGroup */}
+              {(() => {
+                // Create a map of form groups
+                const formGroups: { [key: string]: Form[] } = {};
+                const ungroupedForms: Form[] = [];
+                
+                // Organize forms into groups
+                availableForms.forEach(form => {
+                  if (form.formGroup) {
+                    if (!formGroups[form.formGroup]) {
+                      formGroups[form.formGroup] = [];
+                    }
+                    formGroups[form.formGroup].push(form);
+                  } else {
+                    ungroupedForms.push(form);
+                  }
+                });
+                
+                return (
+                  <>
+                    {/* Render grouped forms */}
+                    {Object.entries(formGroups).map(([groupName, forms]) => (
+                      <div key={groupName} className="space-y-1">
+                        <button 
+                          onClick={() => toggleGroupExpanded(groupName)}
+                          className="flex items-center justify-between w-full text-sm font-medium px-2 py-1 bg-muted/30 rounded hover:bg-muted/50 transition-colors"
+                        >
+                          <span>{groupName}</span>
+                          <span className="text-muted-foreground">
+                            {expandedGroups[groupName] ? 
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg> : 
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                            }
+                          </span>
+                        </button>
+                        {expandedGroups[groupName] && (
+                          <ul className="space-y-1 pl-2">
+                            {forms.map((form) => (
+                              <li key={form.id}>
+                                <button 
+                                  onClick={() => handleFormClick(form.id)}
+                                  className={cn(
+                                    "flex items-center w-full p-2 rounded-md text-sm transition-colors",
+                                    "hover:bg-muted/50",
+                                    currentFormId === form.id 
+                                      ? "bg-primary/10 text-primary font-medium" 
+                                      : "text-foreground"
+                                  )}
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  <span className="truncate">{form.title}</span>
+                                  {currentFormId === form.id && (
+                                    <ChevronRight className="h-4 w-4 ml-auto" />
+                                  )}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Render ungrouped forms */}
+                    {ungroupedForms.length > 0 && (
+                      <div className="space-y-1">
+                        {Object.keys(formGroups).length > 0 && (
+                          <h3 className="text-sm font-medium px-2 py-1 bg-muted/30 rounded">
+                            Ungrouped
+                          </h3>
+                        )}
+                        <ul className={cn("space-y-1", Object.keys(formGroups).length > 0 ? "pl-2" : "")}>
+                          {ungroupedForms.map((form) => (
+                            <li key={form.id}>
+                              <button 
+                                onClick={() => handleFormClick(form.id)}
+                                className={cn(
+                                  "flex items-center w-full p-2 rounded-md text-sm transition-colors",
+                                  "hover:bg-muted/50",
+                                  currentFormId === form.id 
+                                    ? "bg-primary/10 text-primary font-medium" 
+                                    : "text-foreground"
+                                )}
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                <span className="truncate">{form.title}</span>
+                                {currentFormId === form.id && (
+                                  <ChevronRight className="h-4 w-4 ml-auto" />
+                                )}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    <span className="truncate">{form.title}</span>
-                    {currentFormId === form.id && (
-                      <ChevronRight className="h-4 w-4 ml-auto" />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
+                  </>
+                );
+              })()}
+            </div>
           )}
         </div>
       </div>

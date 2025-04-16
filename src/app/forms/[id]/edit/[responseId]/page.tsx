@@ -17,12 +17,11 @@ interface EditResponsePageProps {
 
 export default async function EditResponsePage({ params }: EditResponsePageProps) {
   const { userId } = await auth();
+  const { id: formId, responseId } = await Promise.resolve(params);
+  
   if (!userId) {
     redirect('/sign-in');
   }
-
-  // Properly await the params object as required by Next.js 13+
-  const { id: formId, responseId } = await Promise.resolve(params);
 
   const form = await prisma.form.findUnique({
     where: { id: formId },

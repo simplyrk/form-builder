@@ -15,9 +15,10 @@ interface EditFormPageProps {
 
 export default async function EditFormPage({ params }: EditFormPageProps) {
   const { userId } = await auth();
+  const { id } = await Promise.resolve(params);
   
   const form = await prisma.form.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { 
       fields: {
         orderBy: {

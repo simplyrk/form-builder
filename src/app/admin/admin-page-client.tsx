@@ -83,7 +83,7 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-foreground">{TEXT.MANAGE_FORMS}</h1>
         <Link href="/admin/forms/new">

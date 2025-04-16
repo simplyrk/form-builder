@@ -14,7 +14,7 @@ export default async function NewFormPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">{TEXT.CREATE_NEW_FORM}</h1>
       </div>
@@ -32,6 +32,7 @@ export default async function NewFormPage() {
             data: {
               title: formData.title,
               description: formData.description || '',
+              formGroup: formData.formGroup || '',
               createdBy: userId,
               fields: {
                 create: formData.fields.map((field) => ({

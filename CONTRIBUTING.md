@@ -1,135 +1,115 @@
-# Contributing to Cursor CRM
+# Contributing Guide
 
-Thank you for your interest in contributing to Cursor CRM! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to the Cursor CRM project! This document provides guidelines and instructions to help you contribute effectively.
 
-## Code of Conduct
+## Development Environment Setup
 
-Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a respectful and inclusive community.
+1. Fork and clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Start the development server: `npm run dev`
 
-## Getting Started
+## Code Structure
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/cursor-crm.git`
-3. Create a new branch: `git checkout -b feature/your-feature-name`
-4. Install dependencies: `npm install`
-5. Set up environment variables (see README.md)
-6. Start the development server: `npm run dev`
+The project follows a feature-based structure:
 
-## Development Guidelines
+- `src/app` - Next.js App Router routes and server components
+- `src/components` - Reusable UI components
+- `src/lib` - Shared utilities and libraries
+- `src/types` - TypeScript type definitions
+- `src/utils` - Utility functions
+- `src/__tests__` - Test files
 
-### Code Style
+## Coding Standards
+
+### TypeScript
 
 - Use TypeScript for all new code
-- Follow the existing code style and formatting
-- Use meaningful variable and function names
-- Add JSDoc comments to all functions and components
-- Keep functions small and focused
-- Use proper error handling
+- Maintain strong typing - avoid using `any` when possible
+- Use interface for object types
+- Use proper error handling with specific error types
 
-### Git Workflow
+### ESLint
 
-1. Create a new branch for each feature or bug fix
-2. Make small, focused commits
-3. Write clear commit messages
-4. Keep your branch up to date with the main branch
-5. Submit a pull request when ready
+The project uses a dual ESLint configuration:
 
-### Pull Request Process
+1. Modern ESM config (`eslint.config.js`) - The primary configuration
+2. Legacy config (`.eslintrc.json`) - For compatibility with Next.js
 
-1. Update the README.md if needed
-2. Update the documentation if needed
-3. Add tests for new features
-4. Ensure all tests pass
-5. Request a review from maintainers
-
-### Testing
-
-- Write unit tests for new features
-- Write integration tests for complex features
-- Ensure all tests pass before submitting a PR
-- Test on different browsers and devices
-
-### Documentation
-
-- Add JSDoc comments to all functions and components
-- Update the README.md if needed
-- Update the API documentation if needed
-- Add comments for complex logic
-
-### File Structure
-
-- Keep related files together
-- Use consistent file naming
-- Follow the existing project structure
-- Place new components in appropriate directories
-
-### Error Handling
-
-- Use proper error handling
-- Add error boundaries where needed
-- Log errors appropriately
-- Provide user-friendly error messages
-
-### Performance
-
-- Optimize images and assets
-- Minimize bundle size
-- Use proper caching
-- Follow React best practices
-
-### Security
-
-- Follow security best practices
-- Validate user input
-- Sanitize data
-- Use proper authentication and authorization
-- Follow the guidelines in our [Security Policy](SECURITY.md)
-
-### Technology Stack
-
-Please stick to the following technologies when contributing:
-
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS 4, shadcn/ui components
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Clerk
-- **Form Management**: React Hook Form with Zod validation
-
-## Development Setup
-
-### Database Setup
-
-1. Install PostgreSQL locally
-2. Create a new database for the project
-3. Update your `.env` file with the database connection string
-4. Run migrations with `npx prisma db push`
-
-### Running in Development Mode
+Before submitting a PR, ensure your code passes linting:
 
 ```bash
-# Start the development server with Turbopack
-npm run dev
+npm run lint
 ```
 
-### Building for Production
+To automatically fix issues when possible:
 
 ```bash
-# Build the application
-npm run build
+npm run lint:fix
+```
 
-# Start the production server
+### Import Order
+
+Follow this import order for consistency:
+
+1. React/Next.js imports
+2. External dependencies
+3. Internal imports (using `@/` path alias)
+4. Relative imports
+
+Always use the `@/` path alias for imports from the `src` directory.
+
+### CSS/Styling
+
+- Use Tailwind CSS for styling
+- For complex components, consider using CSS Modules
+- Follow mobile-first approach for responsive design
+
+## Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes
+3. Ensure all tests pass: `npm test`
+4. Run linting: `npm run lint`
+5. Update documentation if necessary
+6. Submit a PR with a clear description of changes
+
+## Build Process
+
+The build process uses Next.js build with some customizations:
+
+- ESLint is run separately from the build for better control
+- TypeScript type checking is enabled during build
+- The project uses ESM modules
+
+To test a production build locally:
+
+```bash
+npm run build
 npm run start
 ```
 
-## Questions?
+## Troubleshooting
 
-If you have any questions, please:
+### ESLint Issues
 
-1. Check the existing documentation
-2. Search for similar issues
-3. Open a new issue if needed
-4. Join our community chat
+If you encounter ESLint configuration issues:
 
-## License
+1. Make sure you have the latest dependencies installed
+2. Check if your IDE ESLint plugin is properly configured
+3. Try clearing the ESLint cache: `npm run lint -- --cache false`
 
-By contributing to Cursor CRM, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE). 
+### TypeScript Errors
+
+For TypeScript errors in specific files:
+
+1. Check the excluded files in `eslint.config.js`
+2. Consider adding temporary type assertions if needed during development
+3. Make sure your IDE is using the project's TypeScript version
+
+## Questions and Support
+
+If you have questions or need help, please open an issue in the repository. 

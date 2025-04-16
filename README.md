@@ -270,3 +270,96 @@ This project is licensed under the terms specified in the [LICENSE](LICENSE) fil
 - [shadcn/ui](https://ui.shadcn.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [PM2](https://pm2.keymetrics.io/)
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- npm/yarn/pnpm
+
+### Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Build
+
+To build the application for production:
+
+```bash
+npm run build
+```
+
+### ESLint Configuration
+
+This project uses a dual ESLint configuration approach:
+
+1. **Modern ESLint Config (eslint.config.js)**: Contains comprehensive rules for TypeScript, imports, and accessibility.
+2. **Legacy Config (.eslintrc.json)**: Added for Next.js compatibility.
+
+The project is configured to run ESLint separately from the build process to improve build times and provide more control over linting.
+
+#### Linting Commands
+
+- Run ESLint check:
+  ```bash
+  npm run lint
+  ```
+- Fix automatically fixable issues:
+  ```bash
+  npm run lint:fix
+  ```
+
+### TypeScript Configuration
+
+TypeScript is configured with strict mode enabled. Some specific pages have been excluded from type checking in the `eslint.config.js` file until their issues are fixed.
+
+### Module System
+
+The project uses ECMAScript modules (ESM) rather than CommonJS:
+- Package.json includes `"type": "module"`
+- Next.js config uses `.mjs` extension
+- Import/export statements follow ESM syntax
+
+### Testing
+
+Run tests with:
+
+```bash
+npm test
+```
+
+Specific test commands:
+```bash
+npm run test:utils      # Run utility tests
+npm run test:file-upload # Run file upload tests
+npm run test:prisma     # Run Prisma tests
+npm run test:api        # Run API tests
+npm run test:home       # Run HomePage tests
+npm run test:watch      # Run tests in watch mode
+npm run test:coverage   # Generate test coverage report
+```
+
+### Production Deployment
+
+For production deployment using PM2:
+
+```bash
+npm run pm2:start     # Start the application with PM2
+npm run pm2:stop      # Stop the application
+npm run pm2:restart   # Restart the application
+npm run pm2:logs      # View logs
+npm run pm2:monit     # Monitor the application
+```

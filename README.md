@@ -61,7 +61,7 @@ UPLOAD_DIR="public/uploads"  # Directory for file uploads
 
 # App Configuration
 NEXT_PUBLIC_APP_NAME="Form Builder"  # Used in both the site logo and welcome message
-NEXT_PUBLIC_APP_ICON="ClipboardList"  # Icon from Lucide React library (https://lucide.dev/icons/)
+NEXT_PUBLIC_APP_ICON="ClipboardList"  # Icon used in the top-left header (logo)
 NEXT_PUBLIC_WELCOME_ICON="FileText"  # Icon used before the welcome message on homepage
 
 # Configurable Text Strings
@@ -72,6 +72,18 @@ NEXT_PUBLIC_TEXT_AVAILABLE_FORMS="Available Forms"
 # NEXT_PUBLIC_TEXT_WELCOME_MESSAGE="Welcome to Form Builder"
 NEXT_PUBLIC_TEXT_WELCOME_DESCRIPTION="Click on a form in the navbar to get started"
 NEXT_PUBLIC_TEXT_FORMS_AVAILABLE_MESSAGE="There are {count} forms available."  # Use {count} as placeholder for dynamic values
+
+# Available Icon Options:
+# The app currently supports these specific icon values:
+# - FileText (document with text)
+# - ClipboardList (clipboard with list items)
+# - Check (checkmark)
+# - File (basic file)
+# - Settings (gear icon)
+# - Home (house icon)
+# - Pencil (pen/pencil icon)
+# - Box (square box icon)
+# Using any other value will fall back to FileText
 ```
 
 4. Initialize the database:

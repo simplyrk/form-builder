@@ -60,14 +60,15 @@ CLERK_SECRET_KEY="your_clerk_secret_key"
 UPLOAD_DIR="public/uploads"  # Directory for file uploads
 
 # App Configuration
-NEXT_PUBLIC_APP_NAME="Form Builder"
+NEXT_PUBLIC_APP_NAME="Form Builder"  # Used in both the site logo and welcome message
 NEXT_PUBLIC_APP_ICON="ClipboardList"
 
 # Configurable Text Strings
 NEXT_PUBLIC_TEXT_MANAGE_FORMS="Manage Forms"
 NEXT_PUBLIC_TEXT_CREATE_NEW_FORM="Create New Form"
 NEXT_PUBLIC_TEXT_AVAILABLE_FORMS="Available Forms"
-NEXT_PUBLIC_TEXT_WELCOME_MESSAGE="Welcome to Form Builder"
+# Welcome message defaults to "Welcome to {NEXT_PUBLIC_APP_NAME}" if not specified
+# NEXT_PUBLIC_TEXT_WELCOME_MESSAGE="Welcome to Form Builder"
 NEXT_PUBLIC_TEXT_WELCOME_DESCRIPTION="Click on a form in the navbar to get started"
 NEXT_PUBLIC_TEXT_FORMS_AVAILABLE_MESSAGE="There are {count} forms available."  # Use {count} as placeholder for dynamic values
 ```

@@ -11,6 +11,7 @@ import { toggleFormPublish, deleteForm } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Form } from '@/types/form';
+import { TEXT } from '@/lib/text-constants';
 
 interface AdminPageClientProps {
   forms: Form[];
@@ -84,9 +85,9 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
   return (
     <div className="container mx-auto py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Manage Forms</h1>
+        <h1 className="text-3xl font-bold text-foreground">{TEXT.MANAGE_FORMS}</h1>
         <Link href="/admin/forms/new">
-          <Button>Create New Form</Button>
+          <Button>{TEXT.CREATE_NEW_FORM}</Button>
         </Link>
       </div>
 

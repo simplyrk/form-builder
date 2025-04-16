@@ -10,6 +10,7 @@ import { FileText } from 'lucide-react';
 import { FormsLayout } from '@/components/forms-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Form } from '@/types/form';
+import { TEXT } from '@/lib/text-constants';
 
 export default function HomePage() {
   const { userId } = useAuth();
@@ -72,10 +73,10 @@ export default function HomePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-6 w-6" />
-                Welcome to Form Builder
+                {TEXT.WELCOME_MESSAGE}
               </CardTitle>
               <CardDescription>
-                Click on a form in the navbar to get started
+                {TEXT.WELCOME_DESCRIPTION}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -85,7 +86,7 @@ export default function HomePage() {
                 <p className="text-muted-foreground">No forms are available at the moment.</p>
               ) : (
                 <p className="text-muted-foreground">
-                  There are {availableForms.length} form{availableForms.length === 1 ? '' : 's'} available.
+                  {TEXT.FORMS_AVAILABLE_MESSAGE(availableForms.length)}
                 </p>
               )}
             </CardContent>

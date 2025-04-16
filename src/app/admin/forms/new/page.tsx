@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 
 import { FormBuilder } from '@/components/form-builder';
 import { prisma } from '@/lib/prisma';
+import { TEXT } from '@/lib/text-constants';
 
 export default async function NewFormPage() {
   const { userId } = await auth();
@@ -15,7 +16,7 @@ export default async function NewFormPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Create New Form</h1>
+        <h1 className="text-3xl font-bold">{TEXT.CREATE_NEW_FORM}</h1>
       </div>
 
       <FormBuilder

@@ -10,6 +10,7 @@ import { FileText, ChevronRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Form } from '@/types/form';
+import { TEXT } from '@/lib/text-constants';
 
 interface FormsLayoutProps {
   children: React.ReactNode;
@@ -61,7 +62,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
       {/* Sidebar */}
       <div className="w-64 border-r bg-muted/10 overflow-y-auto">
         <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4">Available Forms</h2>
+          <h2 className="text-lg font-semibold mb-4">{TEXT.AVAILABLE_FORMS}</h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>

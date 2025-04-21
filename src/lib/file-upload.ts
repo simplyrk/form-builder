@@ -11,8 +11,9 @@ import { join, extname, basename } from 'path';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { scanFile } from './file-scanner';
 import { log, error } from '@/utils/logger';
+
+import { scanFile } from './file-scanner';
 
 /** Directory where uploaded files are stored securely outside public directory */
 const STORAGE_DIR = process.env.STORAGE_DIR || join(process.cwd(), 'storage', 'uploads');

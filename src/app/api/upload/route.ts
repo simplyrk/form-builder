@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       fileSize: fileData.fileSize,
       mimeType: fileData.mimeType,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to upload file';
     error('Error handling file upload:', err);
     return NextResponse.json({ error: errorMessage }, { status: 500 });

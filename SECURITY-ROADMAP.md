@@ -1,0 +1,76 @@
+# Security Roadmap
+
+This document outlines planned security improvements for the Cursor CRM project, prioritized by impact and implementation effort.
+
+## High Priority (Immediate)
+
+1. **Implement Content Security Policy (CSP)** - IMPLEMENTED
+   - Add CSP headers to protect against XSS attacks
+   - Define allowed sources for scripts, styles, images, and connections
+   - Status: Completed
+
+2. **Enable Helmet Security Headers**
+   - Install and configure Helmet.js for comprehensive HTTP header security
+   - Add headers for XSS protection, clickjacking prevention, and MIME type security
+   - Status: Pending
+
+3. **Improve File Upload Security**
+   - Move uploads outside public directory
+   - Implement server-side MIME type validation
+   - Add virus/malware scanning for uploaded files
+   - Status: Pending
+
+## Medium Priority (Next 30 Days)
+
+4. **Implement Rate Limiting**
+   - Add rate limiting to authentication endpoints
+   - Protect form submission endpoints
+   - Implement IP-based and user-based rate limiting
+   - Status: Pending
+
+5. **Enable Audit Logging**
+   - Log authentication events
+   - Track file uploads/downloads
+   - Record form submissions with IP and user agent
+   - Store logs securely
+   - Status: Pending
+
+6. **Database Security Enhancements**
+   - Implement field-level encryption for sensitive data
+   - Add database connection pooling with limits
+   - Set up automated database backups
+   - Status: Pending
+
+## Long-term Improvements (60-90 Days)
+
+7. **Security Scanning Integration**
+   - Set up automated dependency scanning
+   - Implement SAST/DAST in CI/CD pipeline
+   - Configure regular security scans
+   - Status: Pending
+
+8. **Implement 2FA for All User Accounts**
+   - Require 2FA for admin accounts
+   - Encourage 2FA for all users
+   - Add backup methods for account recovery
+   - Status: Pending
+
+9. **Data Retention and Deletion Policy**
+   - Implement automated data deletion for old records
+   - Add user data export functionality
+   - Create admin tools for data management
+   - Status: Pending
+
+## Monitoring and Compliance
+
+10. **Security Monitoring Dashboard**
+    - Create security metrics dashboard
+    - Set up alerts for suspicious activities
+    - Implement automated response for common threats
+    - Status: Pending
+
+11. **Regular Security Reviews**
+    - Schedule quarterly security assessments
+    - Document findings and remediation steps
+    - Update security documentation
+    - Status: Pending 

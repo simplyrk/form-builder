@@ -14,6 +14,7 @@ export default {
     '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
     '^@/app/(.*)$': '<rootDir>/src/app/$1',
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
+    '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   transform: {

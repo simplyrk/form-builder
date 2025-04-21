@@ -91,7 +91,33 @@ The form builder uses @hello-pangea/dnd for drag-and-drop functionality. Fields 
 
 ### File Uploads
 
-File uploads are handled on the server side. Files are stored in the `UPLOAD_DIR` directory (configured in .env). File metadata is stored in the ResponseField model, including:
+The application has two file storage implementations:
+
+1. **Primary Implementation** (`src/lib/file-upload.ts`):
+   - Files are stored securely in the `STORAGE_DIR` directory (`storage/uploads` by default)
+   - Temporary files are stored in `TEMP_DIR` (`storage/temp` by default)
+   - Files are renamed using UUID-based unique filenames
+   - Files undergo security scanning via the `file-scanner.ts` module
+   - Served via `/api/files/[filename]` routes
+
+2. **Forms Implementation** (`src/app/actions/forms.ts`):
+   - Files are stored in `public/uploads` directory 
+   - Files are renamed using timestamp-based filenames
+   - Organized in subdirectories by form and response IDs
+
+The `getFullFilePath` function in `file-upload.ts` intelligently handles both storage mechanisms:
+- For standard API requests (`/api/files/[filename]`), it looks in the primary `STORAGE_DIR`
+- For path requests starting with 'uploads/', it looks in the `public/uploads` directory
+- For paths with subdirectories, it tries multiple locations in a specific order
+- This dual-storage support allows backward compatibility with existing uploads
+
+When uploading files:
+- File validation checks for size limits, MIME types, and dangerous extensions
+- Files undergo MIME type verification to prevent content forgery
+- Files are scanned for malware and viruses (when enabled)
+- File metadata (name, path, size, MIME type) is stored in the database
+
+File metadata is stored in the ResponseField model, including:
 - Original filename
 - Storage path
 - File size
@@ -126,9 +152,10 @@ PM2 configuration is in ecosystem.config.js.
 
 ### File Upload Problems
 
-- Check if UPLOAD_DIR exists and has write permissions
+- Check if UPLOAD_DIR and STORAGE_DIR exist and have write permissions
 - Verify MAX_FILE_SIZE and ALLOWED_FILE_TYPES configuration
 - Check disk space availability
+- If files are not being found when serving, ensure the correct storage path is being referenced
 
 ### Authentication Issues
 

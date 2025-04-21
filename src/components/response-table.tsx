@@ -131,7 +131,7 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -174,7 +174,7 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-muted/50">

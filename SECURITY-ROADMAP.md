@@ -2,17 +2,37 @@
 
 This document outlines planned security improvements for the Cursor CRM project, prioritized by impact and implementation effort.
 
+## Implementation Notes
+
+### Running the Server with Security Features
+
+The security features implemented in this roadmap are automatically applied when running the standard Next.js server:
+
+```bash
+# Development mode with security headers
+npm run dev
+
+# Production build and run with security headers
+npm run build
+npm start
+```
+
+No additional commands or configuration is needed as the security features are implemented as Next.js middleware, which is automatically loaded when the server starts.
+
 ## High Priority (Immediate)
 
 1. **Implement Content Security Policy (CSP)** - IMPLEMENTED
    - Add CSP headers to protect against XSS attacks
    - Define allowed sources for scripts, styles, images, and connections
+   - Implementation: src/middleware.ts
    - Status: Completed
 
-2. **Enable Helmet Security Headers**
-   - Install and configure Helmet.js for comprehensive HTTP header security
-   - Add headers for XSS protection, clickjacking prevention, and MIME type security
-   - Status: Pending
+2. **Enable Helmet Security Headers** - IMPLEMENTED
+   - Add security headers using Next.js middleware (src/middleware-helmet.ts)
+   - Implement headers for XSS protection, clickjacking prevention, and MIME type security
+   - Added Strict-Transport-Security (HSTS) with a 2-year duration
+   - Implementation: src/middleware-helmet.ts
+   - Status: Completed
 
 3. **Improve File Upload Security**
    - Move uploads outside public directory

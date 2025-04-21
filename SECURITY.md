@@ -44,10 +44,34 @@ Form Builder implements several security measures to protect users and their dat
 
 ### Infrastructure
 - HTTPS enforcement
-- Security headers
+- Security headers (implemented via Next.js middleware)
 - Rate limiting
 - Error handling
 - Logging
+
+### Security Headers
+
+The application implements comprehensive HTTP security headers via middleware:
+
+1. **Content Security Policy (CSP)**
+   - Restricts which resources can be loaded
+   - Prevents XSS attacks by controlling allowed sources for scripts, styles, images
+   - Customized to work with Clerk authentication
+   - Implementation: `src/middleware.ts`
+
+2. **Helmet-style Security Headers**
+   - X-Content-Type-Options: Prevents MIME type sniffing
+   - X-Frame-Options: Prevents clickjacking attacks
+   - Strict-Transport-Security: Enforces HTTPS connections
+   - X-XSS-Protection: Additional XSS protection for older browsers
+   - X-DNS-Prefetch-Control: Controls browser DNS prefetching
+   - Implementation: `src/middleware-helmet.ts`
+
+These security features are automatically applied when running the standard Next.js server:
+```
+npm run dev    # Development mode
+npm start      # Production mode
+```
 
 ### File Upload Security
 - File type validation

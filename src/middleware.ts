@@ -5,9 +5,10 @@
  * Routes can be made public by adding them to the exclusion list in this file.
  * By default, all routes require authentication unless explicitly excluded.
  */
-import { NextResponse } from "next/server";
-import { clerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
 /**
  * Apply full security headers to the response

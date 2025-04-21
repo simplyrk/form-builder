@@ -176,7 +176,15 @@ export function FormViewer({ form, initialData = {}, responseId, onSubmit }: For
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex justify-end space-x-4">
+        <Button 
+          type="button" 
+          variant="outline"
+          onClick={() => router.back()} 
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : (responseId ? 'Update Response' : 'Submit')}
         </Button>

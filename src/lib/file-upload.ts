@@ -16,7 +16,7 @@ import { log, error } from '@/utils/logger';
 import { scanFile } from './file-scanner';
 
 /** Directory where uploaded files are stored securely outside public directory */
-const STORAGE_DIR = process.env.STORAGE_DIR || join(process.cwd(), 'storage', 'uploads');
+export const STORAGE_DIR = process.env.UPLOAD_DIR || process.env.STORAGE_DIR || join(process.cwd(), 'storage', 'uploads');
 
 /** Directory for temporary file scanning */
 const TEMP_DIR = process.env.TEMP_DIR || join(process.cwd(), 'storage', 'temp');
@@ -257,24 +257,18 @@ export async function handleFileUpload(file: File): Promise<{
 
 /**
  * Gets the full file path for a relative file path
- * This function supports multiple storage locations to ensure compatibility with
- * different file upload implementations in the application.
+ * This function maps relative paths to the storage directory.
  * 
  * @param {string} relativePath - The relative file path
- * @returns {string} The full file path
- * 
- * The function checks multiple locations in this order:
- * 1. For paths starting with 'uploads/' - looks in public/uploads
- * 2. For paths with subdirectories:
- *    a. Tries the main storage with just the filename
- *    b. Tries the full path in storage
- *    c. Falls back to the public directory
- * 3. For simple filenames - uses the standard storage directory
+ * @returns {string} The full file path in storage/uploads
  */
 export function getFullFilePath(relativePath: string): string {
-  // Check if the path is for a file in the public/uploads directory
+  // For paths starting with 'uploads/', map them to storage/uploads 
   if (relativePath.startsWith('uploads/')) {
-    return join(process.cwd(), 'public', relativePath);
+    const pathWithoutPrefix = relativePath.substring('uploads/'.length);
+    const fullPath = join(STORAGE_DIR, pathWithoutPrefix);
+    log(`Looking for file in storage: ${fullPath}`);
+    return fullPath;
   }
   
   // Handle paths with subdirectories
@@ -283,25 +277,24 @@ export function getFullFilePath(relativePath: string): string {
     const segments = relativePath.split('/');
     const filename = segments[segments.length - 1];
     
-    // First try the main storage directory
+    // First try the main storage directory with just the filename
     const mainStoragePath = join(STORAGE_DIR, filename);
     if (existsSync(mainStoragePath)) {
+      log(`File found in main storage: ${mainStoragePath}`);
       return mainStoragePath;
     }
     
     // If not found, try the full path in storage
     const fullStoragePath = join(STORAGE_DIR, ...segments);
-    if (existsSync(fullStoragePath)) {
-      return fullStoragePath;
-    }
-    
-    // As a fallback, try constructing the path in public directory
-    return join(process.cwd(), 'public', relativePath);
+    log(`Looking for file in storage path: ${fullStoragePath}`);
+    return fullStoragePath;
   }
   
   // Standard case: just the filename
   const filename = basename(relativePath);
-  return join(STORAGE_DIR, filename);
+  const storagePath = join(STORAGE_DIR, filename);
+  log(`Using standard storage path: ${storagePath}`);
+  return storagePath;
 }
 
 /**

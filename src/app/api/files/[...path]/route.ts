@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@clerk/nextjs/server';
 
-import { getFullFilePath } from '@/lib/file-upload';
+import { getFullFilePath, STORAGE_DIR } from '@/lib/file-upload';
 import { log, error } from '@/utils/logger';
 
 /**
@@ -23,11 +23,63 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Safely await params even though it's not a promise (to satisfy NextJS)
     const { path: pathSegments } = await Promise.resolve(params);
     
+    // Join all path segments to form the full relative path
+    const relativePath = pathSegments.join('/');
+    log(`Requested file path: ${relativePath}`);
+    
+    // Handle case for uploads directory with form/response IDs
+    if (pathSegments.length >= 4 && pathSegments[0] === 'uploads') {
+      // This is likely a path like /uploads/formId/responseId/filename.jpg
+      const formId = pathSegments[1];
+      const responseId = pathSegments[2];
+      const filename = pathSegments.slice(3).join('/');
+      
+      // Construct the path in storage/uploads
+      const storagePath = path.join(
+        STORAGE_DIR,
+        formId, 
+        responseId,
+        filename
+      );
+      
+      log(`Looking for form upload at: ${storagePath}`);
+      
+      if (fs.existsSync(storagePath)) {
+        const fileBuffer = fs.readFileSync(storagePath);
+        const ext = path.extname(storagePath).toLowerCase();
+        const contentTypeMap: Record<string, string> = {
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.png': 'image/png',
+          '.gif': 'image/gif',
+          '.pdf': 'application/pdf',
+          '.doc': 'application/msword',
+          '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          '.xls': 'application/vnd.ms-excel',
+          '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        };
+        
+        let contentType = 'application/octet-stream';
+        if (ext in contentTypeMap) {
+          contentType = contentTypeMap[ext];
+        }
+        
+        return new NextResponse(fileBuffer, {
+          headers: {
+            'Content-Type': contentType,
+            'Content-Disposition': `inline; filename="${path.basename(storagePath)}"`,
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'private, max-age=3600'
+          },
+        });
+      }
+    }
+    
     // Get the filename from the path segments
     const filename = pathSegments[pathSegments.length - 1];
     
     // Get the full file path from our secure storage
-    const fullPath = getFullFilePath(filename);
+    const fullPath = getFullFilePath(relativePath);
     
     log(`Looking for file at: ${fullPath}`);
     

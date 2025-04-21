@@ -14,6 +14,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
+import { STORAGE_DIR } from '@/lib/file-upload';
 import { prisma } from '@/lib/prisma';
 import type { Form, FormField, FormResponse, ResponseField } from '@/types/form';
 import { log, error } from '@/utils/logger';
@@ -309,7 +310,7 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
     
     // Define paths
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    const uploadDir = STORAGE_DIR;
     const filePath = path.join(uploadDir, filename);
     
     log('Uploading file:', file.name, 'to path:', filePath);
@@ -323,7 +324,7 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     log('File uploaded successfully');
     
     return {
-      path: `uploads/${filename}`,
+      path: `api/files/${filename}`,
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type
@@ -465,7 +466,7 @@ async function saveFile(file: File, formId: string, responseId: string): Promise
   const fileName = `${timestamp}-${originalName}`;
   
   // Create the directory path
-  const dirPath = path.join(process.cwd(), 'public', 'uploads', formId, responseId);
+  const dirPath = path.join(STORAGE_DIR, formId, responseId);
   
   // Ensure the directory exists
   if (!fs.existsSync(dirPath)) {
@@ -480,8 +481,8 @@ async function saveFile(file: File, formId: string, responseId: string): Promise
   const buffer = Buffer.from(arrayBuffer);
   fs.writeFileSync(filePath, buffer);
   
-  // Return the relative path for storage in the database
-  return `/uploads/${formId}/${responseId}/${fileName}`;
+  // Return the relative path for storage in the database that will be used by the API
+  return `api/files/${formId}/${responseId}/${fileName}`;
 }
 
 export async function submitResponse(formId: string, data: Record<string, string | string[] | File>) {

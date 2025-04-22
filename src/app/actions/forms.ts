@@ -324,7 +324,7 @@ async function handleFileUpload(file: File): Promise<FileUploadResult> {
     log('File uploaded successfully');
     
     return {
-      path: `api/files/${filename}`,
+      path: filename, // Just return the filename, api route will handle the full path
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type
@@ -481,8 +481,9 @@ async function saveFile(file: File, formId: string, responseId: string): Promise
   const buffer = Buffer.from(arrayBuffer);
   fs.writeFileSync(filePath, buffer);
   
-  // Return the relative path for storage in the database that will be used by the API
-  return `api/files/${formId}/${responseId}/${fileName}`;
+  // Return just the path segments without the api/files prefix
+  // The API route will add the prefix
+  return `${formId}/${responseId}/${fileName}`;
 }
 
 export async function submitResponse(formId: string, data: Record<string, string | string[] | File>) {

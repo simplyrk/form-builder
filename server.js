@@ -3,6 +3,10 @@ import { parse } from 'url';
 import next from 'next';
 import helmet from 'helmet';
 import express from 'express';
+import { validateEnvOrExit } from './src/lib/env-validation.js';
+
+// Validate environment variables before starting the server
+validateEnvOrExit();
 
 const dev = process.env.NODE_ENV !== 'production';
 const isDebugMode = process.env.DEBUG === 'true';

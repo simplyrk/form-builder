@@ -238,14 +238,15 @@ export async function handleFileUpload(file: File): Promise<{
     // Calculate file info for database
     const fileSize = (await stat(finalFilePath)).size;
     
-    // Return file metadata with a relative path that can be used for serving
-    const relativePath = `api/files/${basename(finalFilePath)}`;
+    // Return file metadata - just the filename without api/files prefix
+    // The API route will handle the full path construction
+    const filename = basename(finalFilePath);
     
-    log(`File uploaded successfully: ${relativePath}`);
+    log(`File uploaded successfully: ${filename}`);
     
     return {
       fileName: file.name,
-      filePath: relativePath,
+      filePath: filename,
       fileSize: fileSize,
       mimeType: file.type,
     };
@@ -256,45 +257,21 @@ export async function handleFileUpload(file: File): Promise<{
 }
 
 /**
- * Gets the full file path for a relative file path
- * This function maps relative paths to the storage directory.
- * 
- * @param {string} relativePath - The relative file path
- * @returns {string} The full file path in storage/uploads
+ * Gets the full physical file path from a relative URL path
+ * @param {string} relativePath - The relative path used in URLs
+ * @returns {string} The full file path on disk
  */
 export function getFullFilePath(relativePath: string): string {
-  // For paths starting with 'uploads/', map them to storage/uploads 
-  if (relativePath.startsWith('uploads/')) {
-    const pathWithoutPrefix = relativePath.substring('uploads/'.length);
-    const fullPath = join(STORAGE_DIR, pathWithoutPrefix);
-    log(`Looking for file in storage: ${fullPath}`);
-    return fullPath;
+  // Remove any leading slashes and api/files prefix if present
+  const cleanPath = relativePath.replace(/^\/?(api\/files\/)?/, '');
+  
+  // Simple case: if this path has no slashes, it's a filename in STORAGE_DIR
+  if (!cleanPath.includes('/')) {
+    return join(STORAGE_DIR, cleanPath);
   }
   
-  // Handle paths with subdirectories
-  if (relativePath.includes('/')) {
-    // Extract the filename as the last segment of the path
-    const segments = relativePath.split('/');
-    const filename = segments[segments.length - 1];
-    
-    // First try the main storage directory with just the filename
-    const mainStoragePath = join(STORAGE_DIR, filename);
-    if (existsSync(mainStoragePath)) {
-      log(`File found in main storage: ${mainStoragePath}`);
-      return mainStoragePath;
-    }
-    
-    // If not found, try the full path in storage
-    const fullStoragePath = join(STORAGE_DIR, ...segments);
-    log(`Looking for file in storage path: ${fullStoragePath}`);
-    return fullStoragePath;
-  }
-  
-  // Standard case: just the filename
-  const filename = basename(relativePath);
-  const storagePath = join(STORAGE_DIR, filename);
-  log(`Using standard storage path: ${storagePath}`);
-  return storagePath;
+  // For nested paths like formId/responseId/filename, preserve the full structure
+  return join(STORAGE_DIR, cleanPath);
 }
 
 /**

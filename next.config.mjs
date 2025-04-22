@@ -1,4 +1,12 @@
 /** @type {import('next').NextConfig} */
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Note: We're now relying on the npm script validate-env
+// which runs before the build to validate environment variables
+// This avoids the need for hacky imports in this config file
+
 const nextConfig = {
   typescript: {
     // Enable TypeScript checks during build
@@ -11,6 +19,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
+      bodySizeLimit: '10mb', // Increase body size limit for file uploads
     },
   },
   // Add security headers

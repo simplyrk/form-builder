@@ -27,12 +27,16 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     const relativePath = pathSegments.join('/');
     log(`Requested file path: ${relativePath}`);
     
+    // Check if this path is a direct file reference or contains api/files
+    const pathForLookup = relativePath.replace(/^api\/files\//, '');
+    log(`Normalized path for lookup: ${pathForLookup}`);
+    
     // Handle case for uploads directory with form/response IDs
-    if (pathSegments.length >= 4 && pathSegments[0] === 'uploads') {
-      // This is likely a path like /uploads/formId/responseId/filename.jpg
-      const formId = pathSegments[1];
-      const responseId = pathSegments[2];
-      const filename = pathSegments.slice(3).join('/');
+    if (pathSegments.length >= 3 && pathSegments[0] !== 'api') {
+      // This is likely a path like /formId/responseId/filename.jpg
+      const formId = pathSegments[0];
+      const responseId = pathSegments[1];
+      const filename = pathSegments.slice(2).join('/');
       
       // Construct the path in storage/uploads
       const storagePath = path.join(
@@ -79,7 +83,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     const filename = pathSegments[pathSegments.length - 1];
     
     // Get the full file path from our secure storage
-    const fullPath = getFullFilePath(relativePath);
+    const fullPath = getFullFilePath(pathForLookup);
     
     log(`Looking for file at: ${fullPath}`);
     

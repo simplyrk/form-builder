@@ -243,8 +243,11 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                         // Get the file path and ensure it doesn't have a leading slash
                         const filePath = responseField.filePath || '';
                         
+                        // Check if the path already contains api/files and remove it if needed
+                        const cleanPath = filePath.replace(/^api\/files\//, '');
+                        
                         // Return the URL path properly formatted
-                        return `/api/files/${filePath}`;
+                        return `/api/files/${cleanPath}`;
                       })()}
                       target="_blank"
                       rel="noopener noreferrer"

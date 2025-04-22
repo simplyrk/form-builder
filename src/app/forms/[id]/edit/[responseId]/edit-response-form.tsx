@@ -203,6 +203,8 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
             const hasNewFile = !!fileField?.file;
             const isRequired = field.required && !hasCurrentFile && !hasNewFile;
             
+            const responseField = response.fields.find((rf: ResponseField) => rf.fieldId === field.id);
+            
             return (
               <div key={field.id} className="space-y-2">
                 <label className="text-sm font-medium">
@@ -212,36 +214,36 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
                 
                 <div className="space-y-3">
                   {/* Show current file if exists */}
-                  {hasCurrentFile && (
-                    <div className="flex items-center space-x-2 p-3 border rounded-md bg-muted/30">
-                      {fileField.currentFile?.mimeType?.startsWith('image/') ? (
-                        <ImageIcon className="h-5 w-5 text-blue-500" />
-                      ) : (
-                        <FileIcon className="h-5 w-5 text-gray-500" />
-                      )}
-                      <span className="text-sm">{fileField.currentFile?.name}</span>
-                      <a 
+                  {responseField?.filePath && !fileField.deleteExisting && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <FileIcon className="h-4 w-4" />
+                      <span className="truncate">Current file: {responseField.fileName}</span>
+                      <a
                         href={(() => {
                           // Get the file path and ensure it doesn't have a leading slash
-                          const filePath = fileField.currentFile?.path || '';
+                          const filePath = responseField.filePath || '';
+                          
+                          // Check if the path already contains api/files and remove it if needed
+                          const cleanPath = filePath.replace(/^api\/files\//, '');
                           
                           // Return the URL path properly formatted
-                          return `/api/files/${filePath}`;
-                        })()} 
-                        target="_blank" 
+                          return `/api/files/${cleanPath}`;
+                        })()}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 text-sm hover:underline ml-auto"
+                        className="text-blue-500 hover:underline"
                       >
                         View
                       </a>
-                      <Button
+                      <Button 
                         type="button"
-                        variant="ghost"
+                        variant="outline" 
                         size="sm"
+                        className="h-7 px-2"
                         onClick={() => handleFileDelete(field.id)}
-                        className="h-8 px-2 text-destructive hover:text-destructive"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
                       </Button>
                     </div>
                   )}

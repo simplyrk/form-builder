@@ -46,7 +46,7 @@ export default async function EditResponsePage({
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="p-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Edit Response</h1>
         <p className="text-muted-foreground">

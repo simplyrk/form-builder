@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 
 import { auth } from '@clerk/nextjs/server';
 
-import { FormsLayout } from '@/components/forms-layout';
 import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
 
@@ -53,16 +52,14 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
   }
 
   return (
-    <FormsLayout>
-      <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">Edit Response</h1>
-          <p className="text-muted-foreground">
-            Edit the response for form: {form.title}
-          </p>
-        </div>
-        <EditResponseForm form={form} response={response} />
+    <div className="p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Edit Response</h1>
+        <p className="text-muted-foreground">
+          Edit the response for form: {form.title}
+        </p>
       </div>
-    </FormsLayout>
+      <EditResponseForm form={form} response={response} />
+    </div>
   );
 } 

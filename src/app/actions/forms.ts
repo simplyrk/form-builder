@@ -128,44 +128,96 @@ export async function updateForm(
       return { success: false, error: 'Not authenticated' };
     }
 
-    // First delete all existing fields
-    await prisma.field.deleteMany({
-      where: { formId },
-    });
-
-    // Then update the form and create new fields
-    const form = await prisma.form.findUnique({
+    // First fetch the existing form and its fields
+    const existingForm = await prisma.form.findUnique({
       where: { id: formId },
+      include: { fields: true }
     });
 
-    if (!form) {
+    if (!existingForm) {
       throw new Error('Form not found');
     }
 
-    const updatedForm = await prisma.form.update({
-      where: { id: formId },
-      data: {
-        title: data.title,
-        description: data.description || '',
-        formGroup: data.formGroup || '',
-        published: data.published ?? form.published,
-        fields: {
-          create: data.fields.map((field, index) => ({
-            ...field,
-            order: index,
-          })),
+    // Prepare the update transaction
+    const result = await prisma.$transaction(async (prisma) => {
+      // Update the form details
+      const updatedForm = await prisma.form.update({
+        where: { id: formId },
+        data: {
+          title: data.title,
+          description: data.description || '',
+          formGroup: data.formGroup || '',
+          published: data.published ?? existingForm.published,
         },
-      },
-      include: {
-        fields: true,
-      },
+        include: { fields: true },
+      });
+      
+      // Get existing field IDs
+      const existingFieldIds = existingForm.fields.map(field => field.id);
+      
+      // Update or create fields
+      for (let i = 0; i < data.fields.length; i++) {
+        const fieldData = data.fields[i];
+        
+        // If there's an existing field at this index, update it
+        if (i < existingFieldIds.length) {
+          await prisma.field.update({
+            where: { id: existingFieldIds[i] },
+            data: {
+              label: fieldData.label,
+              type: fieldData.type,
+              required: fieldData.required,
+              options: fieldData.options || [],
+              order: i,
+            }
+          });
+        } else {
+          // Otherwise create a new field
+          await prisma.field.create({
+            data: {
+              formId,
+              label: fieldData.label,
+              type: fieldData.type,
+              required: fieldData.required,
+              options: fieldData.options || [],
+              order: i,
+            }
+          });
+        }
+      }
+      
+      // If there are more existing fields than provided fields, delete the excess ones
+      // but only if they don't have any responses (to avoid foreign key constraint errors)
+      if (existingFieldIds.length > data.fields.length) {
+        const fieldsToDelete = existingFieldIds.slice(data.fields.length);
+        
+        // For each field we want to delete, check if it has any responses
+        for (const fieldId of fieldsToDelete) {
+          const responseCount = await prisma.responseField.count({
+            where: { fieldId }
+          });
+          
+          // Only delete fields that have no responses
+          if (responseCount === 0) {
+            await prisma.field.delete({
+              where: { id: fieldId }
+            });
+          }
+        }
+      }
+      
+      // Fetch the updated form with all fields
+      return prisma.form.findUnique({
+        where: { id: formId },
+        include: { fields: true }
+      });
     });
 
     revalidatePath('/');
     revalidatePath('/admin');
     revalidatePath(`/forms/${formId}`);
 
-    return { success: true, form: updatedForm };
+    return { success: true, form: result };
   } catch (error) {
     console.error('Error updating form:', error);
     return { 
@@ -435,6 +487,38 @@ export async function updateResponse(formId: string, responseId: string, data: F
               filePath: field.filePath,
               fileSize: field.fileSize,
               mimeType: field.mimeType
+            })
+          }
+        });
+      }
+    }
+    
+    // Also handle missing fields - create ResponseField entries for fields that
+    // didn't exist in the response before but are part of the form
+    const responseWithFields = response as unknown as { fields?: { fieldId: string }[] };
+    const existingResponseFieldIds = responseWithFields && responseWithFields.fields ? 
+      responseWithFields.fields.map(rf => rf.fieldId) : [];
+    const formFieldIds = fields.map(f => f.id);
+    
+    // Find form fields that don't have a corresponding response field
+    const missingFieldIds = formFieldIds.filter(id => !existingResponseFieldIds.includes(id));
+    
+    // For each missing field, check if it was submitted in the form data
+    for (const fieldId of missingFieldIds) {
+      const submittedField = updatedFields.find(f => f.fieldId === fieldId);
+      
+      // If the field was submitted, create a new response field
+      if (submittedField) {
+        await prisma.responseField.create({
+          data: {
+            responseId,
+            fieldId,
+            value: submittedField.value,
+            ...(submittedField.fileName && {
+              fileName: submittedField.fileName,
+              filePath: submittedField.filePath,
+              fileSize: submittedField.fileSize,
+              mimeType: submittedField.mimeType
             })
           }
         });

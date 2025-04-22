@@ -50,7 +50,8 @@ export type FieldType =
   | 'multiselect'
   | 'checkbox'
   | 'radio'
-  | 'file';
+  | 'file'
+  | 'picklist';
 
 export interface FormField {
   id: string;

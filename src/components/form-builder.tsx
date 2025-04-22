@@ -304,9 +304,60 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                                 <option value="number">Number</option>
                                 <option value="date">Date</option>
                                 <option value="file">File</option>
+                                <option value="picklist">Picklist</option>
                               </select>
                             </div>
                           </div>
+                          
+                          {(field.type === 'picklist' || field.type === 'select') && (
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Options (one per line)
+                              </label>
+                              <div className="flex flex-col space-y-2">
+                                {field.options?.map((option, optionIndex) => (
+                                  <div key={optionIndex} className="flex items-center">
+                                    <Input
+                                      value={option}
+                                      onChange={(e) => {
+                                        const newOptions = [...(field.options || [])];
+                                        newOptions[optionIndex] = e.target.value;
+                                        handleFieldChange(index, { options: newOptions });
+                                      }}
+                                      placeholder={`Option ${optionIndex + 1}`}
+                                      disabled={isSubmitting}
+                                      className="flex-1"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        const newOptions = [...(field.options || [])].filter((_, i) => i !== optionIndex);
+                                        handleFieldChange(index, { options: newOptions });
+                                      }}
+                                      disabled={isSubmitting}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newOptions = [...(field.options || []), ''];
+                                    handleFieldChange(index, { options: newOptions });
+                                  }}
+                                  disabled={isSubmitting}
+                                >
+                                  <Plus className="w-4 h-4 mr-2" /> Add Option
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
                           <div className="flex items-center space-x-2 pt-2">
                             <input
                               type="checkbox"

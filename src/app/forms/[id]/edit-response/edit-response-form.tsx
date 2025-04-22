@@ -57,12 +57,30 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, FormDataValue>>(() => {
     const initialData: Record<string, FormDataValue> = {};
+    
+    // First, initialize all fields with empty/default values
+    form.fields.forEach(field => {
+      if (field.type === 'checkbox') {
+        initialData[field.id] = false;
+      } else if (field.type === 'multiselect') {
+        initialData[field.id] = [];
+      } else if (field.type !== 'file') {
+        initialData[field.id] = '';
+      }
+    });
+    
+    // Then, override with any existing response values
     response.fields.forEach((responseField) => {
       const formField = form.fields.find(f => f.id === responseField.fieldId);
       if (formField && formField.type !== 'file') {
-        initialData[responseField.fieldId] = responseField.value;
+        if (formField.type === 'checkbox') {
+          initialData[responseField.fieldId] = responseField.value === 'true';
+        } else {
+          initialData[responseField.fieldId] = responseField.value;
+        }
       }
     });
+    
     return initialData;
   });
   const [fileData, setFileData] = useState<Record<string, File | null>>({});
@@ -167,129 +185,165 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Add hidden inputs for all fields to ensure complete data submission */}
       {form.fields.map((field) => {
-        const responseField = response.fields.find(f => f.fieldId === field.id);
-        const currentValue = formData[field.id];
-        const isFileDeleted = deletedFiles.has(field.id);
-
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label>{field.label}</Label>
-            {field.type === 'text' && (
-              <Input
-                type="text"
-                value={currentValue as string || ''}
-                onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                required={field.required}
-              />
-            )}
-            {field.type === 'textarea' && (
-              <Textarea
-                value={currentValue as string || ''}
-                onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                required={field.required}
-              />
-            )}
-            {field.type === 'checkbox' && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={field.id}
-                  checked={currentValue as boolean || false}
-                  onCheckedChange={(checked) => handleFieldChange(field.id, checked)}
-                />
-                <Label htmlFor={field.id}>{field.label}</Label>
-              </div>
-            )}
-            {field.type === 'radio' && field.options && (
-              <RadioGroup
-                value={currentValue as string || ''}
-                onValueChange={(value) => handleFieldChange(field.id, value)}
-                required={field.required}
-              >
-                {field.options.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`${field.id}-${option}`} />
-                    <Label htmlFor={`${field.id}-${option}`}>{option}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            )}
-            {field.type === 'select' && field.options && (
-              <Select
-                value={currentValue as string || ''}
-                onValueChange={(value) => handleFieldChange(field.id, value)}
-                required={field.required}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an option" />
-                </SelectTrigger>
-                <SelectContent>
-                  {field.options.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {field.type === 'file' && (
-              <div className="space-y-2">
-                {responseField?.filePath && !isFileDeleted && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <FileIcon className="h-4 w-4" />
-                    <span>Current file: {responseField.fileName}</span>
-                    <a
-                      href={(() => {
-                        // Get the file path and ensure it doesn't have a leading slash
-                        const filePath = responseField.filePath || '';
-                        
-                        // Check if the path already contains api/files and remove it if needed
-                        const cleanPath = filePath.replace(/^api\/files\//, '');
-                        
-                        // Return the URL path properly formatted
-                        return `/api/files/${cleanPath}`;
-                      })()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      View
-                    </a>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2"
-                      onClick={() => handleDeleteFile(field.id)}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                )}
-                {isFileDeleted && (
-                  <div className="text-sm text-amber-600">
-                    File will be removed when you save changes
-                  </div>
-                )}
-                {showFileInput[field.id] && (
-                  <FileInput 
-                    key={`file-input-${field.id}-${Date.now()}`}
-                    fieldId={field.id}
-                    required={field.required && !responseField?.filePath && !isFileDeleted}
-                    onChange={handleFileChange}
-                  />
-                )}
-                <p className="text-sm text-gray-500">
-                  {field.required && !responseField?.filePath && !isFileDeleted
-                    ? 'Please upload a new file'
-                    : 'Leave empty to keep the current file'}
-                </p>
-              </div>
-            )}
-          </div>
-        );
+        if (field.type !== 'file' && field.type !== 'checkbox') {
+          return (
+            <input
+              key={`hidden-${field.id}`}
+              type="hidden"
+              name={field.id}
+              value={formData[field.id] as string || ''}
+            />
+          );
+        }
+        return null;
       })}
+      
+      <div className="space-y-6">
+        {form.fields.map((field) => {
+          const responseField = response.fields.find(f => f.fieldId === field.id);
+          const currentValue = formData[field.id];
+          const isFileDeleted = deletedFiles.has(field.id);
+
+          return (
+            <div key={field.id} className="space-y-2">
+              <Label>{field.label}</Label>
+              {field.type === 'text' && (
+                <Input
+                  type="text"
+                  value={currentValue as string || ''}
+                  onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                  required={field.required}
+                />
+              )}
+              {field.type === 'textarea' && (
+                <Textarea
+                  value={currentValue as string || ''}
+                  onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                  required={field.required}
+                />
+              )}
+              {field.type === 'checkbox' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={field.id}
+                    checked={currentValue as boolean || false}
+                    onCheckedChange={(checked) => handleFieldChange(field.id, checked)}
+                  />
+                  <Label htmlFor={field.id}>{field.label}</Label>
+                </div>
+              )}
+              {field.type === 'radio' && field.options && (
+                <RadioGroup
+                  value={currentValue as string || ''}
+                  onValueChange={(value) => handleFieldChange(field.id, value)}
+                  required={field.required}
+                >
+                  {field.options.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option} id={`${field.id}-${option}`} />
+                      <Label htmlFor={`${field.id}-${option}`}>{option}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+              {field.type === 'select' && field.options && (
+                <Select
+                  value={currentValue as string || ''}
+                  onValueChange={(value) => handleFieldChange(field.id, value)}
+                  required={field.required}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {field.type === 'picklist' && field.options && (
+                <Select
+                  value={currentValue as string || ''}
+                  onValueChange={(value) => handleFieldChange(field.id, value)}
+                  required={field.required}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {field.type === 'file' && (
+                <div className="space-y-2">
+                  {responseField?.filePath && !isFileDeleted && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <FileIcon className="h-4 w-4" />
+                      <span>Current file: {responseField.fileName}</span>
+                      <a
+                        href={(() => {
+                          // Get the file path and ensure it doesn't have a leading slash
+                          const filePath = responseField.filePath || '';
+                          
+                          // Check if the path already contains api/files and remove it if needed
+                          const cleanPath = filePath.replace(/^api\/files\//, '');
+                          
+                          // Return the URL path properly formatted
+                          return `/api/files/${cleanPath}`;
+                        })()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        View
+                      </a>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => handleDeleteFile(field.id)}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+                  {isFileDeleted && (
+                    <div className="text-sm text-amber-600">
+                      File will be removed when you save changes
+                    </div>
+                  )}
+                  {showFileInput[field.id] && (
+                    <FileInput 
+                      key={`file-input-${field.id}-${Date.now()}`}
+                      fieldId={field.id}
+                      required={field.required && !responseField?.filePath && !isFileDeleted}
+                      onChange={handleFileChange}
+                    />
+                  )}
+                  <p className="text-sm text-gray-500">
+                    {field.required && !responseField?.filePath && !isFileDeleted
+                      ? 'Please upload a new file'
+                      : 'Leave empty to keep the current file'}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
       <div className="flex justify-end space-x-4">
         <Button
           type="button"

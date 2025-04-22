@@ -88,6 +88,9 @@ function renderFieldValue(field: FormField, responseField: ResponseField | undef
     case 'multiselect':
       const multiValue = String(responseField.value);
       return multiValue.split(',').join(', ');
+    case 'picklist':
+    case 'select':
+      return responseField.value || 'None selected';
     default:
       return responseField.value;
   }

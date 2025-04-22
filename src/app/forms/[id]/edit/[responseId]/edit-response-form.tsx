@@ -60,12 +60,30 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, FormDataValue>>(() => {
     const initialData: Record<string, FormDataValue> = {};
+    
+    // First, initialize all fields with empty/default values
+    form.fields.forEach(field => {
+      if (field.type === 'checkbox') {
+        initialData[field.id] = false;
+      } else if (field.type === 'multiselect') {
+        initialData[field.id] = [];
+      } else if (field.type !== 'file') {
+        initialData[field.id] = '';
+      }
+    });
+    
+    // Then, override with any existing response values
     response.fields.forEach((responseField: ResponseField) => {
       const formField = form.fields.find(f => f.id === responseField.fieldId);
       if (formField && formField.type !== 'file') {
-        initialData[responseField.fieldId] = responseField.value;
+        if (formField.type === 'checkbox') {
+          initialData[responseField.fieldId] = responseField.value === 'true';
+        } else {
+          initialData[responseField.fieldId] = responseField.value;
+        }
       }
     });
+    
     return initialData;
   });
   const [fileFields, setFileFields] = useState<Record<string, FileFieldState>>(() => {
@@ -193,6 +211,21 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-6">
+        {/* Add hidden inputs for all fields to ensure complete data submission */}
+        {form.fields.map((field) => {
+          if (field.type !== 'file' && field.type !== 'checkbox') {
+            return (
+              <input
+                key={`hidden-${field.id}`}
+                type="hidden"
+                name={field.id}
+                value={formData[field.id] as string || ''}
+              />
+            );
+          }
+          return null;
+        })}
+        
         {form.fields.map(field => {
           const value = formData[field.id] || '';
           
@@ -363,7 +396,26 @@ export function EditResponseForm({ form, response }: EditResponseFormProps) {
               
               {field.type === 'select' && field.options && (
                 <Select
-                  value={value as string}
+                  value={value as string || ''}
+                  onValueChange={(value) => handleFieldChange(field.id, value)}
+                  required={field.required}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {field.type === 'picklist' && field.options && (
+                <Select
+                  value={value as string || ''}
                   onValueChange={(value) => handleFieldChange(field.id, value)}
                   required={field.required}
                 >

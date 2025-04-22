@@ -26,6 +26,7 @@ type FieldValue = {
   date: string;
   time: string;
   datetime: string;
+  picklist: string;
 };
 
 /**
@@ -89,6 +90,26 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
           <Select
             value={value as string || ''}
             onValueChange={(value) => onChange(value as FieldValue['select'])}
+            required={field.required}
+            disabled={disabled}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      case 'picklist':
+        return (
+          <Select
+            value={value as string || ''}
+            onValueChange={(value) => onChange(value as FieldValue['picklist'])}
             required={field.required}
             disabled={disabled}
           >

@@ -69,7 +69,7 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
     } as Response;
     
     return (
-      <div className="container mx-auto py-8">
+      <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Edit Response</h1>
         <EditResponseForm form={form} response={response} />
       </div>

@@ -57,9 +57,24 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
    */
   const [formData, setFormData] = useState<Record<string, string | string[] | File>>(() => {
     const initialData: Record<string, string | string[] | File> = {};
+    
+    // First, initialize all fields with empty/default values
+    form.fields.forEach((field) => {
+      // Set default empty values based on field type
+      if (field.type === 'checkbox') {
+        initialData[field.id] = 'false';
+      } else if (field.type === 'multiselect') {
+        initialData[field.id] = [];
+      } else {
+        initialData[field.id] = '';
+      }
+    });
+    
+    // Then, override with any existing response values
     initialResponse.fields.forEach((field: ResponseField) => {
       initialData[field.fieldId] = field.value || '';
     });
+    
     return initialData;
   });
 
@@ -202,6 +217,7 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
         );
 
       case 'select':
+      case 'picklist':
         return (
           <Select
             value={value as string}
@@ -349,6 +365,21 @@ export const EditResponseForm = ({ form, response: initialResponse, onCancel }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Add hidden inputs for all fields to ensure complete data submission */}
+      {form.fields.map((field) => {
+        if (field.type !== 'file' && field.type !== 'checkbox') {
+          return (
+            <input
+              key={`hidden-${field.id}`}
+              type="hidden"
+              name={field.id}
+              value={formData[field.id] as string || ''}
+            />
+          );
+        }
+        return null;
+      })}
+      
       <div className="space-y-6">
         {form.fields.map(field => {
           return (

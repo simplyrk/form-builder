@@ -247,10 +247,18 @@ export async function toggleFormPublish(formId: string) {
     throw new Error('Form not found or unauthorized');
   }
 
-  return prisma.form.update({
+  const updatedForm = await prisma.form.update({
     where: { id: formId },
     data: { published: !form.published },
   });
+  
+  // Revalidate paths to ensure navigation updates
+  revalidatePath('/');
+  revalidatePath('/admin');
+  revalidatePath('/forms');
+  revalidatePath(`/forms/${formId}`);
+  
+  return updatedForm;
 }
 
 /**

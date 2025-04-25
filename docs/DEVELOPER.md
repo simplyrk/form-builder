@@ -1,20 +1,20 @@
 # Developer Documentation
 
-This document provides information for developers working on the Cursor CRM project.
+This document provides information for developers working on the Form Builder project.
 
 ## Project Architecture
 
 ### Overview
 
-Cursor CRM is a form builder and CRM application built with Next.js 15, TypeScript, and Prisma. The application allows users to create, publish, and collect responses for custom forms with various field types.
+Form Builder is a form builder and CRM application built with Next.js 15, TypeScript, and Prisma. The application allows users to create, publish, and collect responses for custom forms with various field types.
 
 ### Tech Stack
 
 - **Frontend**: Next.js 15 with Turbopack, React 19, TypeScript
 - **Styling**: Tailwind CSS 4, shadcn/ui components
 - **Database**: PostgreSQL with Prisma ORM 6.5
-- **Authentication**: Clerk (@clerk/nextjs and @clerk/backend)
-- **State Management**: React Hook Form with Zod validation
+- **Authentication**: Clerk (@clerk/nextjs v6.12.12 and @clerk/backend v1.25.8)
+- **State Management**: React Hook Form v7.55.0 with Zod validation
 - **File Handling**: Server-side file storage with proper path management
 
 ### Directory Structure
@@ -24,7 +24,8 @@ src/
 ├── app/                    # Next.js app router
 │   ├── admin/             # Admin routes and dashboards
 │   ├── forms/             # Form creation and submission
-│   └── sign-in/           # Authentication routes
+│   ├── sign-in/           # Authentication routes
+│   └── actions/           # Server actions for form handling
 ├── components/            # Reusable React components
 │   ├── ui/               # UI components (shadcn/ui)
 │   └── form-builder/     # Form builder specific components
@@ -32,6 +33,7 @@ src/
 │   ├── prisma.ts         # Prisma client for database interaction
 │   └── file-upload.ts    # File upload handling logic
 ├── types/                # TypeScript type definitions
+├── utils/                # Utility functions
 └── middleware.ts         # Authentication middleware (Clerk)
 ```
 
@@ -80,6 +82,8 @@ The application uses a PostgreSQL database with the following main models:
 - `npm run start`: Start the production server
 - `npm run custom-server`: Start the custom Node.js server
 - `npm run lint`: Run ESLint for code linting
+- `npm test`: Run all tests
+- `npm run type-check`: Run TypeScript type checking
 
 ### Authentication
 
@@ -123,6 +127,19 @@ File metadata is stored in the ResponseField model, including:
 - File size
 - MIME type
 
+## Testing
+
+The project uses Jest and React Testing Library for testing. Tests are located in the `src/__tests__` directory.
+
+### Running Tests
+
+- `npm test`: Run all tests
+- `npm run test:utils`: Test utility functions
+- `npm run test:file-upload`: Test file upload functionality
+- `npm run test:prisma`: Test Prisma database client
+- `npm run test:api`: Test API endpoints
+- `npm run test:coverage`: Generate test coverage report
+
 ## Deployment
 
 ### Vercel Deployment
@@ -141,6 +158,22 @@ For custom server deployments:
 2. Start with PM2: `npm run pm2:start`
 
 PM2 configuration is in ecosystem.config.js.
+
+### Environment Validation
+
+Before deployment, the application validates required environment variables using the validate-env.js script. This ensures that all necessary configuration is in place before the application starts.
+
+## Security Considerations
+
+The application implements several security measures:
+
+- Authentication is handled by Clerk, a secure authentication provider
+- File uploads are validated for type, size, and potential malware
+- Content Security Policy (CSP) is implemented through middleware-helmet.ts
+- API routes are protected against CSRF and other common attacks
+- Database queries use Prisma's parameterized queries to prevent SQL injection
+
+See SECURITY.md and SECURITY-ROADMAP.md for more details on security practices and future improvements.
 
 ## Troubleshooting
 

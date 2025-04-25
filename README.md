@@ -37,7 +37,7 @@ A modern & lightweight tool for creating and managing forms with support for var
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/simplyrk/form-builder.git
+git clone https://github.com/yourusername/form-builder.git
 cd form-builder
 ```
 
@@ -50,7 +50,7 @@ npm install
 Create a `.env` file in the root directory with the following variables:
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/cursor_crm"
+DATABASE_URL="postgresql://user:password@localhost:5432/form_builder"
 
 # Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
@@ -58,6 +58,8 @@ CLERK_SECRET_KEY="your_clerk_secret_key"
 
 # File Upload
 UPLOAD_DIR="public/uploads"  # Directory for file uploads
+STORAGE_DIR="storage/uploads" # Primary storage directory
+TEMP_DIR="storage/temp" # Temporary storage directory
 
 # App Configuration
 NEXT_PUBLIC_APP_NAME="Form Builder"  # Used in both the site logo and welcome message
@@ -174,7 +176,7 @@ npm run custom-server
 
 Or with PM2:
 ```bash
-pm2 start server.js --name "cursor-crm"
+pm2 start server.js --name "form-builder"
 ```
 
 ## Project Structure
@@ -208,25 +210,6 @@ The application uses a PostgreSQL database with the following models:
 
 The project uses Jest and React Testing Library for testing. Tests are located in the `src/__tests__` directory and are organized by category.
 
-### Testing Stack
-
-- **Jest**: Testing framework for JavaScript
-- **React Testing Library**: Library for testing React components
-- **@testing-library/jest-dom**: Custom jest matchers for DOM testing
-- **Jest Environment JSDOM**: DOM environment for Jest
-
-### Test Structure
-
-Tests are organized into the following categories:
-
-- **Unit Tests**: Testing individual functions and utilities
-  - `src/__tests__/lib/`: Tests for utility functions and library code
-- **API Tests**: Testing API routes and endpoints
-  - `src/__tests__/api/`: Tests for API handlers
-- **Component Tests**: Testing React components
-  - `src/__tests__/pages/`: Tests for page components
-  - `src/__tests__/components/`: Tests for UI components
-
 ### Running Tests
 
 Run all tests:
@@ -247,42 +230,21 @@ npm run test:prisma
 
 # Test API endpoints
 npm run test:api
-
-# Test homepage components
-npm run test:home
 ```
 
-Run tests in watch mode (useful during development):
-```bash
-npm run test:watch
-```
+## Documentation
 
-Generate test coverage report:
-```bash
-npm run test:coverage
-```
-
-### Test Coverage
-
-Test coverage reports are generated in the `coverage` directory. The project aims for at least 80% code coverage across all files.
-
-### Testing Best Practices
-
-When adding new features, please follow these testing guidelines:
-
-1. Write tests for all new features and bug fixes
-2. Ensure tests are isolated and don't depend on external services
-3. Mock external dependencies when necessary
-4. Keep tests focused on behavior, not implementation details
-5. Maintain high test coverage, especially for critical application logic
-
-## Contributing
-
-Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Detailed documentation can be found in the `docs/` directory:
+- [API Documentation](docs/API.md)
+- [Developer Guide](docs/DEVELOPER.md)
 
 ## Security
 
-For security concerns, please see our [Security Policy](SECURITY.md).
+Please read the [Security Policy](SECURITY.md) for information about our security practices and how to report vulnerabilities.
+
+## Contributing
+
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 

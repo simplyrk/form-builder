@@ -1,6 +1,6 @@
-# Cursor CRM Documentation
+# Form Builder Documentation
 
-Welcome to the Cursor CRM documentation. This directory contains detailed documentation for various aspects of the project.
+Welcome to the Form Builder documentation. This directory contains detailed documentation for various aspects of the project.
 
 ## Documentation Structure
 
@@ -19,7 +19,7 @@ The documentation is organized into several key files:
 
 ## Project Overview
 
-Cursor CRM is a modern form builder and CRM application built with Next.js 15, TypeScript, and Prisma. The application allows users to create, manage, and collect responses for custom forms with various field types including text, textarea, select, file uploads, and more.
+Form Builder is a modern form builder and CRM application built with Next.js 15, TypeScript, and Prisma. The application allows users to create, manage, and collect responses for custom forms with various field types including text, textarea, select, file uploads, and more.
 
 ## Key Features
 
@@ -49,7 +49,7 @@ See the [main README](../README.md) for detailed installation and setup instruct
 
 ## API Documentation
 
-The Cursor CRM provides a comprehensive API for interacting with forms and responses. The API documentation can be found in [API.md](API.md) and includes:
+The Form Builder provides a comprehensive API for interacting with forms and responses. The API documentation can be found in [API.md](API.md) and includes:
 
 - Authentication requirements
 - Available endpoints
@@ -64,7 +64,7 @@ We welcome contributions from the community! Please see our [Contributing Guide]
 
 - **Issues**: Report bugs or request features on our GitHub issues page
 - **Discussions**: Join our community discussions on GitHub Discussions
-- **Email**: Contact support@cursor-crm.com for direct assistance
+- **Email**: Contact support@form-builder.com for direct assistance
 
 ## Release Notes
 
@@ -76,4 +76,4 @@ Our development roadmap is available on GitHub Projects. We prioritize features 
 
 ## License
 
-Cursor CRM is licensed under the terms specified in the [LICENSE](../LICENSE) file. Please review the license before using or contributing to the project. 
+Form Builder is licensed under the terms specified in the [LICENSE](../LICENSE) file. Please review the license before using or contributing to the project. 

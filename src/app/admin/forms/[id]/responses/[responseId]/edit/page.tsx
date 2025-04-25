@@ -2,9 +2,9 @@ import { notFound } from 'next/navigation';
 
 import { auth } from '@clerk/nextjs/server';
 
+import { ResponseEditForm } from '@/components/response-edit-form';
 import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
-import { ResponseEditForm } from '@/components/response-edit-form';
 
 interface EditResponsePageProps {
   params: {

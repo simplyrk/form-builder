@@ -23,6 +23,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
   const [error, setError] = useState<string | null>(null);
   const [currentFormId, setCurrentFormId] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<{[key: string]: boolean}>({});
+  const [refreshTimestamp, setRefreshTimestamp] = useState<number>(Date.now());
   
   const pathname = usePathname();
   const router = useRouter();
@@ -51,11 +52,25 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     }
   }, [availableForms]);
 
+  // Set up a refresh interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshTimestamp(Date.now());
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const fetchAvailableForms = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/forms/available');
+        const response = await fetch('/api/forms/available', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch available forms');
         }
@@ -69,7 +84,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     };
 
     fetchAvailableForms();
-  }, [pathname]);
+  }, [pathname, refreshTimestamp]); // Add refreshTimestamp as a dependency
 
   const handleFormClick = (formId: string) => {
     router.push(`/forms/${formId}/responses`);
@@ -81,6 +96,25 @@ export function FormsLayout({ children }: FormsLayoutProps) {
       [groupName]: !prev[groupName]
     }));
   };
+  
+  // Manual refresh function
+  const refreshForms = () => {
+    setRefreshTimestamp(Date.now());
+  };
+
+  // Listen for form publish/unpublish events
+  useEffect(() => {
+    // Add event listener for custom refresh event
+    const handleRefreshEvent = () => {
+      refreshForms();
+    };
+
+    window.addEventListener('form-status-changed', handleRefreshEvent);
+    
+    return () => {
+      window.removeEventListener('form-status-changed', handleRefreshEvent);
+    };
+  }, []);
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">

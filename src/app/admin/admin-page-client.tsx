@@ -32,6 +32,9 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
       setForms(forms.map(form => 
         form.id === formId ? { ...form, published: updatedForm.published } : form
       ));
+      
+      // Dispatch custom event to notify FormsLayout to refresh
+      window.dispatchEvent(new Event('form-status-changed'));
     } catch (error) {
       console.error('Failed to toggle form publish status:', error);
     } finally {

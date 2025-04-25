@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { updateResponse } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -13,7 +16,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Form, FormField, Response, FormResponse, ResponseField } from '@/types/form';
-import { updateResponse } from '@/app/actions/forms';
 import { log, error } from '@/utils/logger';
 
 // Isolated File Input Component
@@ -159,9 +161,10 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
         router.back();
         setTimeout(() => router.refresh(), 100);
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while updating the response');
-      toast.error(err.message || 'Failed to update response');
+    } catch (err: Error | unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while updating the response';
+      setError(errorMessage);
+      toast.error(errorMessage || 'Failed to update response');
     } finally {
       setIsSubmitting(false);
     }

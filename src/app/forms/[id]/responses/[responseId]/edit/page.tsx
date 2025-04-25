@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { auth } from '@clerk/nextjs/server';
 
-import { EditResponseForm } from '@/app/forms/[id]/edit/[responseId]/edit-response-form';
+import { ResponseEditForm } from '@/components/response-edit-form';
 import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
 
@@ -53,7 +53,7 @@ export default async function EditResponsePage({
           Edit your response to {form.title}
         </p>
       </div>
-      <EditResponseForm form={form} response={response} />
+      <ResponseEditForm form={form} response={response} isAdmin={false} />
     </div>
   );
 } 

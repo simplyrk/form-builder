@@ -4,10 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 
 import { prisma } from '@/lib/prisma';
 import type { Form, Response } from '@/types/form';
-
-import { EditResponseForm } from './edit-response-form';
-
-
+import { ResponseEditForm } from '@/components/response-edit-form';
 
 interface EditResponsePageProps {
   params: {
@@ -59,7 +56,7 @@ export default async function EditResponsePage({ params }: EditResponsePageProps
           Edit the response for form: {form.title}
         </p>
       </div>
-      <EditResponseForm form={form} response={response} />
+      <ResponseEditForm form={form} response={response} isAdmin={true} />
     </div>
   );
 } 

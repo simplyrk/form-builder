@@ -23,7 +23,6 @@ export function FormsLayout({ children }: FormsLayoutProps) {
   const [error, setError] = useState<string | null>(null);
   const [currentFormId, setCurrentFormId] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<{[key: string]: boolean}>({});
-  const [refreshTimestamp, setRefreshTimestamp] = useState<number>(Date.now());
   
   const pathname = usePathname();
   const router = useRouter();
@@ -52,15 +51,6 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     }
   }, [availableForms]);
 
-  // Set up a refresh interval
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTimestamp(Date.now());
-    }, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     const fetchAvailableForms = async () => {
       try {
@@ -84,7 +74,7 @@ export function FormsLayout({ children }: FormsLayoutProps) {
     };
 
     fetchAvailableForms();
-  }, [pathname, refreshTimestamp]); // Add refreshTimestamp as a dependency
+  }, [pathname]); // Only fetch when pathname changes
 
   const handleFormClick = (formId: string) => {
     router.push(`/forms/${formId}/responses`);
@@ -99,7 +89,27 @@ export function FormsLayout({ children }: FormsLayoutProps) {
   
   // Manual refresh function
   const refreshForms = () => {
-    setRefreshTimestamp(Date.now());
+    const fetchAvailableForms = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/forms/available', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch available forms');
+        }
+        const data = await response.json();
+        setAvailableForms(data);
+      } catch (error) {
+        console.error('Error fetching available forms:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAvailableForms();
   };
 
   // Listen for form publish/unpublish events

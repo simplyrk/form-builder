@@ -7,13 +7,14 @@ A modern & lightweight tool for creating and managing forms with support for var
 - **Form Creation**: Create custom forms with various field types (text, textarea, date, file upload, etc.)
 - **Form Management**: Edit, publish/unpublish, and delete forms
 - **Response Collection**: Collect and manage form responses
-- **File Uploads**: Support for file uploads with proper file handling and storage
+- **File Uploads**: Support for file uploads with dual-storage system and security scanning
 - **User Authentication**: Secure authentication using Clerk
 - **Admin Dashboard**: Manage forms and view responses
 - **CSV Export**: Export form responses to CSV format
 - **Dark Mode**: Built-in dark mode support
 - **Responsive Design**: Works on desktop and mobile devices
 - **Drag-and-Drop**: Intuitive form builder interface using @hello-pangea/dnd
+- **Security**: Enhanced security with middleware-helmet implementation
 
 ## Tech Stack
 
@@ -22,8 +23,9 @@ A modern & lightweight tool for creating and managing forms with support for var
 - **Database**: PostgreSQL with Prisma ORM 6.5
 - **Authentication**: Clerk (@clerk/nextjs v6.12.12 and @clerk/backend v1.25.8)
 - **Form Management**: React Hook Form v7.55.0 with Zod validation
-- **File Storage**: Local file system with proper path handling
+- **File Storage**: Dual-storage system with security scanning
 - **Deployment**: Vercel, PM2 (for custom server deployments)
+- **Security**: Middleware-helmet for enhanced security
 
 ## Getting Started
 
@@ -57,23 +59,27 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
 CLERK_SECRET_KEY="your_clerk_secret_key"
 
 # File Upload
-UPLOAD_DIR="public/uploads"  # Directory for file uploads
+UPLOAD_DIR="public/uploads"  # Legacy storage directory for backward compatibility
 STORAGE_DIR="storage/uploads" # Primary storage directory
 TEMP_DIR="storage/temp" # Temporary storage directory
+ENABLE_FILE_SCANNING="true" # Enable security scanning for uploaded files
 
 # App Configuration
-NEXT_PUBLIC_APP_NAME="Form Builder"  # Used in both the site logo and welcome message
-NEXT_PUBLIC_APP_ICON="ClipboardList"  # Icon used in the top-left header (logo)
-NEXT_PUBLIC_WELCOME_ICON="FileText"  # Icon used before the welcome message on homepage
+NEXT_PUBLIC_APP_NAME="Form Builder"
+NEXT_PUBLIC_APP_ICON="ClipboardList"
+NEXT_PUBLIC_WELCOME_ICON="FileText"
+
+# Security
+ENABLE_HELMET="true" # Enable security headers with Helmet
+CSP_ENABLED="true" # Enable Content Security Policy
+HSTS_ENABLED="true" # Enable HTTP Strict Transport Security
 
 # Configurable Text Strings
 NEXT_PUBLIC_TEXT_MANAGE_FORMS="Manage Forms"
 NEXT_PUBLIC_TEXT_CREATE_NEW_FORM="Create New Form"
 NEXT_PUBLIC_TEXT_AVAILABLE_FORMS="Available Forms"
-# Welcome message defaults to "Welcome to {NEXT_PUBLIC_APP_NAME}" if not specified
-# NEXT_PUBLIC_TEXT_WELCOME_MESSAGE="Welcome to Form Builder"
 NEXT_PUBLIC_TEXT_WELCOME_DESCRIPTION="Click on a form in the navbar to get started"
-NEXT_PUBLIC_TEXT_FORMS_AVAILABLE_MESSAGE="There are {count} forms available."  # Use {count} as placeholder for dynamic values
+NEXT_PUBLIC_TEXT_FORMS_AVAILABLE_MESSAGE="There are {count} forms available."
 
 # Available Icon Options:
 # The app currently supports these specific icon values:
@@ -192,9 +198,11 @@ src/
 │   └── form-builder/     # Form builder components
 ├── lib/                   # Utility functions
 │   ├── prisma.ts         # Prisma client
-│   └── file-upload.ts    # File upload handling
+│   ├── file-upload.ts    # File upload handling
+│   ├── security.ts       # Security middleware and scanning
+│   └── storage.ts        # Dual-storage system management
 ├── types/                # TypeScript types
-└── middleware.ts         # Clerk authentication middleware
+└── middleware.ts         # Authentication and security middleware
 ```
 
 ## Database Schema

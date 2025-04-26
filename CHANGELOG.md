@@ -12,17 +12,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security scanning for uploaded files
 - Advanced file path resolution for better file handling
 - Environment variable validation script
+- Middleware-helmet implementation for enhanced security
+- Content Security Policy (CSP) support
+- HTTP Strict Transport Security (HSTS) support
 
 ### Changed
 - Updated to Next.js 15 with Turbopack support
 - Upgraded to React 19
 - Improved form response structure for better data management
 - Enhanced security with middleware-helmet implementation
+- Refactored file storage system for better scalability
+- Updated environment variable configuration
 
 ### Fixed
 - File path resolution issues when serving uploaded files
 - Form validation edge cases
 - Authentication redirect issues
+- Security vulnerabilities in file upload handling
+- Middleware configuration issues
+
+### Security
+- Added file scanning for uploaded content
+- Implemented Helmet.js for security headers
+- Added CSP and HSTS security headers
+- Enhanced file upload security measures
 
 ## [0.1.0] - 2024-05-15
 

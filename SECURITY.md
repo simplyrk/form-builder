@@ -38,20 +38,24 @@ Form Builder implements several security measures to protect users and their dat
 ### Data Protection
 - Input validation
 - Data sanitization
-- Secure file uploads
+- Secure file uploads with dual-storage system
 - File type validation
 - File size limits
+- File content scanning
+- Path traversal prevention
 
 ### Infrastructure
 - HTTPS enforcement
-- Security headers (implemented via Next.js middleware)
+- Security headers (implemented via Helmet.js)
 - Rate limiting
 - Error handling
 - Logging
+- Content Security Policy (CSP)
+- HTTP Strict Transport Security (HSTS)
 
 ### Security Headers
 
-The application implements comprehensive HTTP security headers via middleware:
+The application implements comprehensive HTTP security headers via Helmet.js:
 
 1. **Content Security Policy (CSP)**
    - Restricts which resources can be loaded
@@ -59,7 +63,7 @@ The application implements comprehensive HTTP security headers via middleware:
    - Customized to work with Clerk authentication
    - Implementation: `src/middleware.ts`
 
-2. **Helmet-style Security Headers**
+2. **Helmet.js Security Headers**
    - X-Content-Type-Options: Prevents MIME type sniffing
    - X-Frame-Options: Prevents clickjacking attacks
    - Strict-Transport-Security: Enforces HTTPS connections
@@ -68,17 +72,29 @@ The application implements comprehensive HTTP security headers via middleware:
    - Implementation: `src/middleware-helmet.ts`
 
 These security features are automatically applied when running the standard Next.js server:
-```
+```bash
 npm run dev    # Development mode
 npm start      # Production mode
 ```
 
 ### File Upload Security
+- Dual-storage system for enhanced security
 - File type validation
 - File size limits
 - Secure file storage
 - Path traversal prevention
 - MIME type verification
+- File content scanning
+- Temporary storage isolation
+- Automatic cleanup of temporary files
+
+### File Scanning
+The application includes a robust file scanning system:
+- Scans uploaded files for malicious content
+- Validates file integrity
+- Checks for common security threats
+- Configurable scanning options via environment variables
+- Implementation: `src/lib/security.ts`
 
 ## Best Practices
 
@@ -90,6 +106,8 @@ When using Form Builder, please follow these security best practices:
 4. Regularly backup your data
 5. Monitor your account activity
 6. Report security issues promptly
+7. Enable file scanning for uploaded content
+8. Configure appropriate CSP and HSTS settings
 
 ## Security Updates
 

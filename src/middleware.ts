@@ -28,10 +28,12 @@ function applySecurityHeaders(response: NextResponse, isAuthRoute: boolean): Nex
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.dev https://cdn.jsdelivr.net https://*.googleusercontent.com https://*.google.com; " +
       "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev wss://*.clerk.accounts.dev https://*.google.com https://accounts.google.com; " +
-      "img-src 'self' data: https://*.clerk.accounts.dev https://*.clerk.dev https://*.googleusercontent.com https://*.google.com https://lh3.googleusercontent.com; " +
-      "style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.googleusercontent.com; " +
+      "img-src 'self' data: blob: https://*.clerk.accounts.dev https://*.clerk.dev https://*.googleusercontent.com https://*.google.com https://lh3.googleusercontent.com https://img.clerk.com; " +
+      "style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.googleusercontent.com https://fonts.googleapis.com; " +
       "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://*.google.com https://accounts.google.com; " +
-      "object-src 'none';"
+      "object-src 'none'; " +
+      "worker-src 'self' blob:; " +
+      "font-src 'self' data: https://fonts.gstatic.com; "
     );
   }
 
@@ -39,6 +41,7 @@ function applySecurityHeaders(response: NextResponse, isAuthRoute: boolean): Nex
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=*, microphone=(), geolocation=(), interest-cohort=()');
 
   return response;
 }

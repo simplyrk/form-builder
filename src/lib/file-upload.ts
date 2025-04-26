@@ -25,13 +25,14 @@ const TEMP_DIR = process.env.TEMP_DIR || join(process.cwd(), 'storage', 'temp');
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '10485760', 10);
 
 /** Allowed MIME types for file uploads */
-const ALLOWED_FILE_TYPES = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,application/pdf').split(',');
+const ALLOWED_FILE_TYPES = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/gif,image/webp,application/pdf').split(',');
 
 /** MIME type to file extension mapping for validation */
 const MIME_TO_EXT: Record<string, string[]> = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/gif': ['.gif'],
+  'image/webp': ['.webp'],
   'application/pdf': ['.pdf'],
   'application/msword': ['.doc'],
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
@@ -108,6 +109,13 @@ export async function verifyMimeType(filePath: string, claimedMimeType: string):
                fileSignature[1] === 0x49 && 
                fileSignature[2] === 0x46 && 
                fileSignature[3] === 0x38;
+      
+      case 'image/webp':
+        // WebP signature is 52 49 46 46
+        return fileSignature[0] === 0x52 && 
+               fileSignature[1] === 0x49 && 
+               fileSignature[2] === 0x46 && 
+               fileSignature[3] === 0x46;
       
       case 'application/pdf':
         // PDF signature is 25 50 44 46 (or %PDF)

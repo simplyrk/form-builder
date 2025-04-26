@@ -1,16 +1,20 @@
 'use client';
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+// External imports
+import Image from 'next/image';
+
+import { Camera, X } from 'lucide-react';
+
+// UI component imports
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Field } from '@/types/form';
 
-/**
- * Type representing the possible values for each field type.
- * Each key corresponds to a specific form field type, and the value
- * represents the data type that field would collect.
- */
+// Add FieldValue and FieldType type definitions
+
 type FieldValue = {
   text: string;
   textarea: string;
@@ -29,10 +33,6 @@ type FieldValue = {
   picklist: string;
 };
 
-/**
- * Type alias to get the keys of the FieldValue type.
- * Used to ensure type safety when accessing field values.
- */
 type FieldType = keyof FieldValue;
 
 /**
@@ -48,6 +48,168 @@ interface FormFieldProps {
   value: FieldValue[FieldType];
   onChange: (value: FieldValue[FieldType]) => void;
   disabled?: boolean;
+}
+
+// Custom File Input Component
+function CustomFileInput({ 
+  id, 
+  required, 
+  onChange,
+  disabled
+}: { 
+  id: string; 
+  required: boolean;
+  disabled?: boolean;
+  onChange: (file: File | null) => void;
+}) {
+  const handleCameraClick = async () => {
+    try {
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera access is not supported in your browser. Please try using a modern browser.');
+        return;
+      }
+
+      // For Chrome, first enumerate devices to trigger permission prompt
+      await navigator.mediaDevices.enumerateDevices();
+
+      // Request camera access with specific constraints for Chrome
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        },
+        audio: false
+      });
+      
+      // Create video element to show preview
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.playsInline = true;
+      
+      // Create a modal/dialog to show the camera preview
+      const dialog = document.createElement('dialog');
+      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      
+      const container = document.createElement('div');
+      container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      
+      // Add video container with proper sizing
+      const videoContainer = document.createElement('div');
+      videoContainer.className = 'relative aspect-video bg-black rounded-lg overflow-hidden';
+      video.className = 'w-full h-full object-cover';
+      videoContainer.appendChild(video);
+      
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'flex justify-center space-x-4 mt-4';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.textContent = 'Take Photo';
+      captureBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-medium';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Cancel';
+      closeBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-medium';
+      
+      buttonContainer.appendChild(captureBtn);
+      buttonContainer.appendChild(closeBtn);
+      
+      container.appendChild(videoContainer);
+      container.appendChild(buttonContainer);
+      dialog.appendChild(container);
+      document.body.appendChild(dialog);
+
+      // Make sure video is ready before showing dialog
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().catch(console.error);
+          resolve(true);
+        };
+      });
+      
+      dialog.showModal();
+      
+      const cleanup = () => {
+        stream.getTracks().forEach(track => {
+          track.stop();
+          stream.removeTrack(track);
+        });
+        video.srcObject = null;
+        dialog.remove();
+      };
+      
+      closeBtn.onclick = () => {
+        cleanup();
+      };
+
+      dialog.addEventListener('close', () => {
+        cleanup();
+      });
+      
+      captureBtn.onclick = () => {
+        try {
+          // Create a canvas to capture the image
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(video, 0, 0);
+          
+          // Convert the canvas to a file
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+              console.log('Captured file:', file);
+              onChange(file);
+              // Force a re-render by dispatching an input event
+              const event = new Event('input', { bubbles: true });
+              document.getElementById(id)?.dispatchEvent(event);
+            }
+            cleanup();
+          }, 'image/jpeg', 0.9);
+        } catch (error) {
+          console.error('Error capturing photo:', error);
+          cleanup();
+        }
+      };
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
+        alert('Camera access was denied. Please allow camera access in your browser settings and try again.\n\nIn Chrome: Settings > Privacy and security > Site Settings > Camera');
+      } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+        alert('No camera found. Please make sure your device has a working camera.');
+      } else if (error instanceof DOMException && error.name === 'NotReadableError') {
+        alert('Your camera might be in use by another application. Please close other apps using the camera and try again.');
+      } else {
+        alert('Could not access camera. Please make sure you have a working camera and try again.');
+      }
+    }
+  };
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Input
+        id={id}
+        type="file"
+        accept="image/*"
+        onChange={(e) => onChange(e.target.files?.[0] || null)}
+        required={required}
+        disabled={disabled}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleCameraClick}
+        disabled={disabled}
+        className="flex items-center space-x-1"
+      >
+        <Camera className="h-4 w-4" />
+        <span>Camera</span>
+      </Button>
+    </div>
+  );
 }
 
 /**
@@ -157,13 +319,39 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
         );
       case 'file':
         return (
-          <Input
-            id={field.id}
-            type="file"
-            onChange={(e) => onChange(e.target.files?.[0] as FieldValue['file'])}
-            required={field.required}
-            disabled={disabled}
-          />
+          <div className="space-y-2">
+            <CustomFileInput
+              id={field.id}
+              required={field.required}
+              disabled={disabled}
+              onChange={(file) => {
+                onChange(file);
+              }}
+            />
+            {value instanceof File && (
+              <div className="relative">
+                <Image
+                  src={URL.createObjectURL(value)}
+                  alt="Preview"
+                  width={320}
+                  height={240}
+                  style={{ maxWidth: '20rem', borderRadius: '0.5rem', objectFit: 'contain', width: '100%', height: 'auto' }}
+                  loader={({ src }) => src}
+                  unoptimized
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    onChange(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         );
       default:
         return (

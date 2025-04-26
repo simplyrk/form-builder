@@ -54,7 +54,21 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=*, microphone=(), geolocation=(), interest-cohort=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self';",
+              "img-src 'self' blob: data: https://*.clerk.accounts.dev https://*.clerk.dev https://*.googleusercontent.com https://*.google.com https://lh3.googleusercontent.com https://img.clerk.com;",
+              "script-src 'self';",
+              "style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.googleusercontent.com https://fonts.googleapis.com;",
+              "font-src 'self' data: https://fonts.gstatic.com;",
+              "connect-src 'self';",
+              "media-src 'self' blob:;",
+              "object-src 'none';",
+              "worker-src 'self' blob:;"
+            ].join(' '),
           },
         ],
       },

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { X } from 'lucide-react';
+import { X, Camera, FileIcon } from 'lucide-react';
 
 
 import { submitResponse } from '@/app/actions/forms';
@@ -37,6 +37,125 @@ type FieldValue = {
 
 interface FormProps {
   form: Form;
+}
+
+// Custom File Input Component
+function CustomFileInput({ 
+  id, 
+  required, 
+  onChange 
+}: { 
+  id: string; 
+  required: boolean; 
+  onChange: (file: File | null) => void;
+}) {
+  const [fileName, setFileName] = useState<string>('');
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFileName(file?.name || '');
+    onChange(file);
+  };
+  
+  const handleCameraClick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      
+      // Create video element to show preview
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.autoplay = true;
+      
+      // Create a modal/dialog to show the camera preview
+      const dialog = document.createElement('dialog');
+      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      
+      const container = document.createElement('div');
+      container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.textContent = 'Capture';
+      captureBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 ml-2';
+      
+      container.appendChild(video);
+      container.appendChild(captureBtn);
+      container.appendChild(closeBtn);
+      dialog.appendChild(container);
+      document.body.appendChild(dialog);
+      
+      dialog.showModal();
+      
+      const cleanup = () => {
+        stream.getTracks().forEach(track => track.stop());
+        dialog.remove();
+      };
+      
+      closeBtn.onclick = cleanup;
+      
+      captureBtn.onclick = () => {
+        // Create a canvas to capture the image
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0);
+        
+        // Convert the canvas to a file
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+            setFileName(file.name);
+            onChange(file);
+          }
+          cleanup();
+        }, 'image/jpeg');
+      };
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      alert('Could not access camera. Please make sure you have granted camera permissions.');
+    }
+  };
+  
+  return (
+    <div className="flex flex-col space-y-2">
+      <div className="flex items-center space-x-2">
+        <div className="flex-1">
+          <div className="flex items-center border rounded-md overflow-hidden">
+            <div className="flex-1 p-2 bg-gray-50 text-sm text-gray-500">
+              {fileName || 'No file chosen'}
+            </div>
+            <label 
+              htmlFor={id}
+              className="px-4 py-2 bg-white border-l cursor-pointer hover:bg-gray-50 text-sm font-medium"
+            >
+              Browse
+            </label>
+          </div>
+          <input
+            id={id}
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+            required={required}
+            accept="image/*"
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={handleCameraClick}
+          variant="outline"
+          className="flex items-center space-x-1"
+        >
+          <Camera className="h-4 w-4" />
+          <span>Camera</span>
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export function Form({ form }: FormProps) {
@@ -190,14 +309,10 @@ export function Form({ form }: FormProps) {
       case 'file':
         return (
           <div className="space-y-2">
-            <Input
-              type="file"
+            <CustomFileInput
               id={field.id}
-              onChange={e => {
-                const file = e.target.files?.[0] || null;
-                handleFileChange(field.id, file);
-              }}
               required={field.required}
+              onChange={(file) => handleFileChange(field.id, file)}
             />
             {filePreviews[field.id] && (
               <div className="relative">

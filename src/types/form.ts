@@ -34,6 +34,8 @@ export interface FieldInput {
   options?: string[];
   /** The order of the field in the form */
   order: number;
+  /** Optional help text to display under the field */
+  helpText?: string;
 }
 
 export type FieldType = 
@@ -63,6 +65,8 @@ export interface FormField {
   order: number;
   createdAt: Date;
   updatedAt: Date;
+  /** Optional help text to display under the field */
+  helpText?: string;
 }
 
 /**

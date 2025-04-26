@@ -41,6 +41,7 @@ export default async function NewFormPage() {
                   required: field.required,
                   options: field.options || [],
                   order: field.order,
+                  helpText: field.helpText || null,
                 })),
               },
             },

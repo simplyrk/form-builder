@@ -51,6 +51,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
       required: f.required,
       options: f.options,
       order: f.order,
+      helpText: f.helpText,
     })) || []
   );
 
@@ -307,6 +308,19 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                                 <option value="picklist">Picklist</option>
                               </select>
                             </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">
+                              Help Text
+                            </label>
+                            <Input
+                              value={field.helpText || ''}
+                              onChange={(e) =>
+                                handleFieldChange(index, { helpText: e.target.value })
+                              }
+                              placeholder="Enter help text (optional)"
+                              disabled={isSubmitting}
+                            />
                           </div>
                           
                           {(field.type === 'picklist' || field.type === 'select') && (

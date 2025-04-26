@@ -373,6 +373,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
         {field.required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       {renderField()}
+      {field.helpText && (
+        <p className="text-sm text-muted-foreground mt-1">{field.helpText}</p>
+      )}
     </div>
   );
 } 

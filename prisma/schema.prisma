@@ -33,6 +33,7 @@ model Field {
   required    Boolean  @default(false)
   options     String[]
   order       Int
+  helpText    String?
   formId      String
   form        Form     @relation(fields: [formId], references: [id])
   responses   ResponseField[]

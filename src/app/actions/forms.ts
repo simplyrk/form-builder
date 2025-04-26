@@ -53,6 +53,7 @@ const formFieldSchema = z.object({
   label: z.string(),
   required: z.boolean(),
   options: z.array(z.string()).optional(),
+  helpText: z.string().optional(),
 });
 
 /**
@@ -84,6 +85,7 @@ export async function createForm(data: {
           create: data.fields.map((field, index) => ({
             ...field,
             order: index,
+            helpText: field.helpText || null,
           })),
         },
       },
@@ -169,6 +171,7 @@ export async function updateForm(
               required: fieldData.required,
               options: fieldData.options || [],
               order: i,
+              helpText: fieldData.helpText || null,
             }
           });
         } else {
@@ -181,6 +184,7 @@ export async function updateForm(
               required: fieldData.required,
               options: fieldData.options || [],
               order: i,
+              helpText: fieldData.helpText || null,
             }
           });
         }

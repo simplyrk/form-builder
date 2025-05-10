@@ -1,9 +1,11 @@
 'use client';
 
 // External imports
+import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 
-import { Camera, X } from 'lucide-react';
+import { Camera, X, ImageIcon, FileIcon, Trash2, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 // UI component imports
 import { Button } from "@/components/ui/button";
@@ -62,11 +64,25 @@ function CustomFileInput({
   disabled?: boolean;
   onChange: (file: File | null) => void;
 }) {
-  const handleCameraClick = async () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
+  
+  // List of allowed file types from the configuration (should match server-side)
+  const allowedFileTypes = 'image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  
+  /**
+   * Handles camera capture process including permission requests,
+   * camera stream setup, UI for preview, and image capture.
+   * 
+   * @async
+   * @function
+   * @returns {Promise<void>}
+   */
+  const handleCameraCapture = async () => {
     try {
       // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Camera access is not supported in your browser. Please try using a modern browser.');
+        toast.error("Camera access is not supported in your browser. Please try using a modern browser.");
         return;
       }
 
@@ -92,17 +108,9 @@ function CustomFileInput({
       // Create a modal/dialog to show the camera preview
       const dialog = document.createElement('dialog');
       dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
-      dialog.setAttribute('aria-modal', 'true');
-      dialog.setAttribute('role', 'dialog');
-      dialog.setAttribute('aria-label', 'Camera');
       
       const container = document.createElement('div');
       container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
-      
-      // Remove any heading/title that might be added by the browser
-      const heading = document.createElement('div');
-      heading.className = 'hidden';
-      container.appendChild(heading);
       
       // Add video container with proper sizing
       const videoContainer = document.createElement('div');
@@ -158,21 +166,42 @@ function CustomFileInput({
       
       captureBtn.onclick = () => {
         try {
-          // Create a canvas to capture the image but don't display it
+          // Create a canvas to capture the image
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(video, 0, 0);
           
-          // Convert the canvas to a file without showing preview
+          // Convert the canvas to a file
           canvas.toBlob((blob) => {
             if (blob) {
-              const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+              // Create a filename with date and time to make it unique and descriptive
+              const now = new Date();
+              const formattedDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+              const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+              const filename = `camera-photo_${formattedDate}_${formattedTime}.jpg`;
+              
+              const file = new File([blob], filename, { type: 'image/jpeg' });
               console.log('Captured file:', file);
+              
+              // Set the value on the file input element to show the filename
+              if (inputRef.current) {
+                // Create a DataTransfer object to set the file on the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                inputRef.current.files = dataTransfer.files;
+                
+                // Trigger change event to ensure UI updates
+                const event = new Event('change', { bubbles: true });
+                inputRef.current.dispatchEvent(event);
+              }
+              
+              // Also call the onChange handler
+              setCapturedFile(file);
               onChange(file);
             }
-            cleanup(); // Close the camera dialog immediately
+            cleanup();
           }, 'image/jpeg', 0.9);
         } catch (error) {
           console.error('Error capturing photo:', error);
@@ -182,40 +211,78 @@ function CustomFileInput({
     } catch (error) {
       console.error('Error accessing camera:', error);
       if (error instanceof DOMException && error.name === 'NotAllowedError') {
-        alert('Camera access was denied. Please allow camera access in your browser settings and try again.\n\nIn Chrome: Settings > Privacy and security > Site Settings > Camera');
+        toast.error("Camera access was denied. Please allow camera access in your browser settings and try again.");
       } else if (error instanceof DOMException && error.name === 'NotFoundError') {
-        alert('No camera found. Please make sure your device has a working camera.');
+        toast.error("No camera found. Please make sure your device has a working camera.");
       } else if (error instanceof DOMException && error.name === 'NotReadableError') {
-        alert('Your camera might be in use by another application. Please close other apps using the camera and try again.');
+        toast.error("Your camera might be in use by another application. Please close other apps using the camera and try again.");
       } else {
-        alert('Could not access camera. Please make sure you have a working camera and try again.');
+        toast.error("Could not access camera. Please make sure you have a working camera and try again.");
       }
     }
   };
 
+  // Get the field configuration based on the field ID
+  const fieldConfig = document.getElementById(`file-${id}`)?.getAttribute('data-field-config');
+  let acceptTypes = allowedFileTypes; // Default to all allowed types
+  let showCamera = true; // Default to showing camera button
+  
+  if (fieldConfig) {
+    try {
+      const config = JSON.parse(fieldConfig);
+      if (config.acceptOnly) {
+        acceptTypes = config.acceptOnly;
+      }
+      if (config.noCamera) {
+        showCamera = false;
+      }
+    } catch (e) {
+      console.error('Error parsing field config:', e);
+    }
+  }
+
   return (
-    <div className="flex items-center space-x-2">
-      <div className="flex-1">
-        <Input
-          id={id}
-          type="file"
-          className="w-full"
-          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*"
-          onChange={(e) => onChange(e.target.files?.[0] || null)}
-          required={required}
-          disabled={disabled}
-        />
+    <div className="space-y-2">
+      <div className="flex items-center space-x-2">
+        <div className="flex-1 relative">
+          <Input
+            ref={inputRef}
+            id={`file-${id}`}
+            type="file"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            onChange={(e) => {
+              const file = e.target.files?.[0] || null;
+              setCapturedFile(file); // Update state for non-camera files too
+              onChange(file);
+            }}
+            required={required}
+            disabled={disabled}
+            accept={acceptTypes}
+          />
+        </div>
+        {showCamera && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCameraCapture}
+            disabled={disabled}
+            className="flex items-center space-x-1 whitespace-nowrap"
+          >
+            <Camera className="h-4 w-4 mr-1" />
+            <span>Camera</span>
+          </Button>
+        )}
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleCameraClick}
-        disabled={disabled}
-        className="flex items-center space-x-1"
-      >
-        <Camera className="h-4 w-4" />
-        <span>Camera</span>
-      </Button>
+      
+      {/* Show explicit confirmation when a file is captured */}
+      {capturedFile && (
+        <div className="mt-2 flex items-center p-2 bg-green-50 border border-green-200 rounded-md text-green-700">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+          <span className="text-sm font-medium">
+            Photo captured: {capturedFile.name}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

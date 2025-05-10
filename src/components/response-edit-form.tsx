@@ -20,7 +20,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { ImageIcon, FileIcon, Trash2, Camera } from 'lucide-react';
+import { ImageIcon, FileIcon, Trash2, Camera, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
@@ -167,8 +167,28 @@ function FileInput({
           // Convert the canvas to a file
           canvas.toBlob((blob) => {
             if (blob) {
-              const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+              // Create a filename with date and time to make it unique and descriptive
+              const now = new Date();
+              const formattedDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+              const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+              const filename = `camera-photo_${formattedDate}_${formattedTime}.jpg`;
+              
+              const file = new File([blob], filename, { type: 'image/jpeg' });
               console.log('Captured file:', file);
+              
+              // Set the value on the file input element to show the filename
+              if (inputRef.current) {
+                // Create a DataTransfer object to set the file on the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                inputRef.current.files = dataTransfer.files;
+                
+                // Trigger change event to ensure UI updates
+                const event = new Event('change', { bubbles: true });
+                inputRef.current.dispatchEvent(event);
+              }
+              
+              // Also call the onChange handler
               onChange(fieldId, file);
             }
             cleanup();
@@ -211,9 +231,10 @@ function FileInput({
     }
   }
   
+  // Custom file input with better visual feedback
   return (
     <div className="flex items-center space-x-2">
-      <div className="flex-1">
+      <div className="flex-1 relative">
         <input
           ref={inputRef}
           type="file"
@@ -221,7 +242,7 @@ function FileInput({
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           onChange={(e) => onChange(fieldId, e.target.files?.[0] || null)}
           required={required}
-          accept="*/*"
+          accept={acceptTypes}
         />
       </div>
       {showCamera && (
@@ -610,6 +631,7 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
         const filePath = responseField?.filePath || '';
         const mimeType = uploadedFile ? uploadedFile.type : (responseField?.mimeType || '');
         const isImage = mimeType.startsWith('image/');
+        const isCameraCapture = uploadedFile && uploadedFile.name.startsWith('camera-photo_');
         
         // Get the appropriate icon color based on MIME type
         let iconColor = "";
@@ -652,9 +674,14 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                     </a>
                   )}
                   
-                  {/* For newly uploaded files, show "New File" instead of view link */}
+                  {/* For newly uploaded files, show confirmation message */}
                   {uploadedFile && (
-                    <span className="text-green-500 text-xs font-medium">New File</span>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                      <span className="text-green-500 text-xs font-medium">
+                        {isCameraCapture ? 'Photo ready to upload' : 'File ready to upload'}
+                      </span>
+                    </div>
                   )}
                   
                   <Button 

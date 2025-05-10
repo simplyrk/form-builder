@@ -57,6 +57,18 @@ function CustomFileInput({
     onChange(file);
   };
   
+  const handleDocumentClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = "image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0] || null;
+      setFileName(file?.name || '');
+      onChange(file);
+    };
+    input.click();
+  };
+  
   const handleCameraClick = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -69,9 +81,17 @@ function CustomFileInput({
       // Create a modal/dialog to show the camera preview
       const dialog = document.createElement('dialog');
       dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-label', 'Camera');
       
       const container = document.createElement('div');
       container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      
+      // Remove any heading/title that might be added by the browser
+      const heading = document.createElement('div');
+      heading.className = 'hidden';
+      container.appendChild(heading);
       
       const captureBtn = document.createElement('button');
       captureBtn.textContent = 'Capture';
@@ -97,21 +117,21 @@ function CustomFileInput({
       closeBtn.onclick = cleanup;
       
       captureBtn.onclick = () => {
-        // Create a canvas to capture the image
+        // Create a canvas to capture the image but don't display preview
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(video, 0, 0);
         
-        // Convert the canvas to a file
+        // Convert the canvas to a file without showing preview
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
             setFileName(file.name);
             onChange(file);
           }
-          cleanup();
+          cleanup(); // Close camera dialog immediately
         }, 'image/jpeg');
       };
     } catch (error) {
@@ -128,12 +148,6 @@ function CustomFileInput({
             <div className="flex-1 p-2 bg-gray-50 text-sm text-gray-500">
               {fileName || 'No file chosen'}
             </div>
-            <label 
-              htmlFor={id}
-              className="px-4 py-2 bg-white border-l cursor-pointer hover:bg-gray-50 text-sm font-medium"
-            >
-              Browse
-            </label>
           </div>
           <input
             id={id}
@@ -141,16 +155,25 @@ function CustomFileInput({
             className="hidden"
             onChange={handleFileChange}
             required={required}
-            accept="image/*"
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*"
           />
         </div>
+        <Button
+          type="button"
+          onClick={handleDocumentClick}
+          variant="outline"
+          className="flex items-center space-x-1"
+        >
+          <FileIcon className="h-4 w-4 mr-1" />
+          <span>Browse</span>
+        </Button>
         <Button
           type="button"
           onClick={handleCameraClick}
           variant="outline"
           className="flex items-center space-x-1"
         >
-          <Camera className="h-4 w-4" />
+          <Camera className="h-4 w-4 mr-1" />
           <span>Camera</span>
         </Button>
       </div>
@@ -163,7 +186,6 @@ export function Form({ form }: FormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, FieldValue[keyof FieldValue]>>({});
-  const [filePreviews, setFilePreviews] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,23 +249,11 @@ export function Form({ form }: FormProps) {
         ...prev,
         [fieldId]: file,
       }));
-
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setFilePreviews(prev => ({
-        ...prev,
-        [fieldId]: previewUrl,
-      }));
     } else {
       setFormData(prev => ({
         ...prev,
         [fieldId]: null,
       }));
-      setFilePreviews(prev => {
-        const newPreviews = { ...prev };
-        delete newPreviews[fieldId];
-        return newPreviews;
-      });
     }
   };
 
@@ -314,25 +324,6 @@ export function Form({ form }: FormProps) {
               required={field.required}
               onChange={(file) => handleFileChange(field.id, file)}
             />
-            {filePreviews[field.id] && (
-              <div className="relative">
-                <Image
-                  src={filePreviews[field.id]}
-                  alt="Preview"
-                  width={320}
-                  height={240}
-                  className="max-w-xs rounded-lg object-contain"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => handleFileChange(field.id, null)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           </div>
         );
       default:

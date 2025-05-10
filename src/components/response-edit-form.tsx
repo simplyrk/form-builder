@@ -1,10 +1,26 @@
+/**
+ * Response Edit Form Component
+ * 
+ * This component provides a form for editing responses to forms in the application.
+ * It supports both user and admin contexts, and handles various form field types
+ * including text, textarea, checkbox, radio, select, multiselect, and file uploads.
+ * 
+ * Special features:
+ * - Comprehensive file upload handling with camera integration
+ * - Support for multiple file types (images, PDFs, office documents)
+ * - Form validation
+ * - Admin/user mode with different save behaviors
+ * 
+ * @module response-edit-form
+ */
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { ImageIcon, FileIcon, Trash2 } from 'lucide-react';
+import { ImageIcon, FileIcon, Trash2, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
@@ -18,7 +34,19 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Form, FormField, Response, FormResponse, ResponseField } from '@/types/form';
 import { log, error } from '@/utils/logger';
 
-// Isolated File Input Component
+/**
+ * FileInput Component
+ * 
+ * A specialized file input component that supports both traditional file selection
+ * and direct camera capture functionality for images.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.fieldId - The ID of the form field this input is for
+ * @param {boolean} props.required - Whether the field is required
+ * @param {Function} props.onChange - Callback function when a file is selected/captured
+ * @returns {JSX.Element} The rendered file input with camera support
+ */
 function FileInput({ 
   fieldId, 
   required, 
@@ -30,20 +58,196 @@ function FileInput({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   
+  // List of allowed file types from the configuration (should match server-side)
+  const allowedFileTypes = 'image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  
+  /**
+   * Handles camera capture process including permission requests,
+   * camera stream setup, UI for preview, and image capture.
+   * 
+   * @async
+   * @function
+   * @returns {Promise<void>}
+   */
+  const handleCameraCapture = async () => {
+    try {
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error("Camera access is not supported in your browser. Please try using a modern browser.");
+        return;
+      }
+
+      // For Chrome, first enumerate devices to trigger permission prompt
+      await navigator.mediaDevices.enumerateDevices();
+
+      // Request camera access with specific constraints for Chrome
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        },
+        audio: false
+      });
+      
+      // Create video element to show preview
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.playsInline = true;
+      
+      // Create a modal/dialog to show the camera preview
+      const dialog = document.createElement('dialog');
+      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      
+      const container = document.createElement('div');
+      container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      
+      // Add video container with proper sizing
+      const videoContainer = document.createElement('div');
+      videoContainer.className = 'relative aspect-video bg-black rounded-lg overflow-hidden';
+      video.className = 'w-full h-full object-cover';
+      videoContainer.appendChild(video);
+      
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'flex justify-center space-x-4 mt-4';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.textContent = 'Take Photo';
+      captureBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-medium';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Cancel';
+      closeBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-medium';
+      
+      buttonContainer.appendChild(captureBtn);
+      buttonContainer.appendChild(closeBtn);
+      
+      container.appendChild(videoContainer);
+      container.appendChild(buttonContainer);
+      dialog.appendChild(container);
+      document.body.appendChild(dialog);
+
+      // Make sure video is ready before showing dialog
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().catch(console.error);
+          resolve(true);
+        };
+      });
+      
+      dialog.showModal();
+      
+      const cleanup = () => {
+        stream.getTracks().forEach(track => {
+          track.stop();
+          stream.removeTrack(track);
+        });
+        video.srcObject = null;
+        dialog.remove();
+      };
+      
+      closeBtn.onclick = () => {
+        cleanup();
+      };
+
+      dialog.addEventListener('close', () => {
+        cleanup();
+      });
+      
+      captureBtn.onclick = () => {
+        try {
+          // Create a canvas to capture the image
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(video, 0, 0);
+          
+          // Convert the canvas to a file
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+              console.log('Captured file:', file);
+              onChange(fieldId, file);
+            }
+            cleanup();
+          }, 'image/jpeg', 0.9);
+        } catch (error) {
+          console.error('Error capturing photo:', error);
+          cleanup();
+        }
+      };
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
+        toast.error("Camera access was denied. Please allow camera access in your browser settings and try again.");
+      } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+        toast.error("No camera found. Please make sure your device has a working camera.");
+      } else if (error instanceof DOMException && error.name === 'NotReadableError') {
+        toast.error("Your camera might be in use by another application. Please close other apps using the camera and try again.");
+      } else {
+        toast.error("Could not access camera. Please make sure you have a working camera and try again.");
+      }
+    }
+  };
+
+  // Get the field configuration based on the field ID
+  const fieldConfig = document.getElementById(`file-${fieldId}`)?.getAttribute('data-field-config');
+  let acceptTypes = allowedFileTypes; // Default to all allowed types
+  let showCamera = true; // Default to showing camera button
+  
+  if (fieldConfig) {
+    try {
+      const config = JSON.parse(fieldConfig);
+      if (config.acceptOnly) {
+        acceptTypes = config.acceptOnly;
+      }
+      if (config.noCamera) {
+        showCamera = false;
+      }
+    } catch (e) {
+      console.error('Error parsing field config:', e);
+    }
+  }
+  
   return (
     <div className="flex items-center space-x-2">
-      <input
-        ref={inputRef}
-        type="file"
-        id={`file-${fieldId}`}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        onChange={(e) => onChange(fieldId, e.target.files?.[0] || null)}
-        required={required}
-      />
+      <div className="flex-1">
+        <input
+          ref={inputRef}
+          type="file"
+          id={`file-${fieldId}`}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          onChange={(e) => onChange(fieldId, e.target.files?.[0] || null)}
+          required={required}
+          accept="*/*"
+        />
+      </div>
+      {showCamera && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleCameraCapture}
+          className="flex items-center space-x-1 whitespace-nowrap"
+        >
+          <Camera className="h-4 w-4 mr-1" />
+          <span>Camera</span>
+        </Button>
+      )}
     </div>
   );
 }
 
+/**
+ * ResponseEditForm Props Interface
+ * 
+ * @interface ResponseEditFormProps
+ * @property {Form} form - The form containing the response
+ * @property {Response | FormResponse} response - The response to edit
+ * @property {boolean} [isAdmin] - Whether this form is being used in admin context
+ * @property {() => void} [onCancel] - Optional callback function to handle cancel
+ */
 export interface ResponseEditFormProps {
   /** The form containing the response */
   form: Form;
@@ -55,12 +259,25 @@ export interface ResponseEditFormProps {
   onCancel?: () => void;
 }
 
+/**
+ * Main form component for editing responses
+ * 
+ * This component provides a comprehensive form UI for editing responses,
+ * supporting various field types and both admin and user contexts.
+ * 
+ * @component
+ * @param {ResponseEditFormProps} props - Component props
+ * @returns {JSX.Element} The rendered form
+ */
 export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: ResponseEditFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Initialize form data from response
+  /**
+   * Initialize form data from response
+   * Creates a record of field IDs to their values, handling different field types appropriately
+   */
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     const initialData: Record<string, unknown> = {};
     
@@ -97,21 +314,19 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
     return initialData;
   });
   
+  // Track file uploads and deletions
   const [fileData, setFileData] = useState<Record<string, File | null>>({});
   const [deletedFiles, setDeletedFiles] = useState<Set<string>>(new Set());
-  const [showFileInput, setShowFileInput] = useState<Record<string, boolean>>({});
 
-  // Initialize the showFileInput state based on the fields
-  useEffect(() => {
-    const initialShowFileInput: Record<string, boolean> = {};
-    form.fields.forEach(field => {
-      if (field.type === 'file') {
-        initialShowFileInput[field.id] = true;
-      }
-    });
-    setShowFileInput(initialShowFileInput);
-  }, [form.fields]);
-
+  /**
+   * Handles form submission, including file uploads
+   * Supports both admin and user contexts with different submission methods
+   * 
+   * @async
+   * @function
+   * @param {React.FormEvent<HTMLFormElement>} e - The form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -170,6 +385,12 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
     }
   };
 
+  /**
+   * Handles form cancellation
+   * Will use provided onCancel callback if available, otherwise navigates back
+   * 
+   * @function
+   */
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -178,6 +399,13 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
     }
   };
 
+  /**
+   * Updates form data when a field value changes
+   * 
+   * @function
+   * @param {string} fieldId - The ID of the field to update
+   * @param {unknown} value - The new value for the field
+   */
   const handleFieldChange = (fieldId: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
@@ -185,6 +413,13 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
     }));
   };
 
+  /**
+   * Handles file uploads for a specific field
+   * 
+   * @function
+   * @param {string} fieldId - The ID of the field to update
+   * @param {File | null} file - The file to upload
+   */
   const handleFileChange = (fieldId: string, file: File | null) => {
     setFileData(prev => ({
       ...prev,
@@ -201,6 +436,12 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
     }
   };
   
+  /**
+   * Handles file deletion for a specific field
+   * 
+   * @function
+   * @param {string} fieldId - The ID of the field to delete the file from
+   */
   const handleDeleteFile = (fieldId: string) => {
     // Add to deleted files set
     setDeletedFiles(prev => {
@@ -215,20 +456,24 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
       [fieldId]: null
     }));
     
-    // Toggle file input visibility to force re-render
-    setShowFileInput(prev => ({
-      ...prev,
-      [fieldId]: false
-    }));
-    
+    // Clear the file input value by resetting the input
     setTimeout(() => {
-      setShowFileInput(prev => ({
-        ...prev,
-        [fieldId]: true
-      }));
+      const fileInput = document.getElementById(`file-${fieldId}`) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     }, 50);
   };
 
+  /**
+   * Renders the appropriate input element based on field type
+   * Supports various field types including text, textarea, checkbox, 
+   * radio, select, multiselect, and file uploads
+   * 
+   * @function
+   * @param {FormField} field - The field to render
+   * @returns {JSX.Element | null} The rendered field component
+   */
   const renderField = (field: FormField) => {
     const value = formData[field.id];
     const responseField = response.fields.find(f => f.fieldId === field.id);
@@ -357,17 +602,62 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
 
       case 'file':
         // For file fields, we need to handle both existing files and new uploads
-        const fileValue = responseField?.value;
+        const uploadedFile = fileData[field.id]; // Newly uploaded file
+        const isFileDeleted = deletedFiles.has(field.id);
+        
+        // Use the values from the newly uploaded file if available, otherwise from the response
+        const fileName = uploadedFile ? uploadedFile.name : (responseField?.fileName || responseField?.value || '');
+        const filePath = responseField?.filePath || '';
+        const mimeType = uploadedFile ? uploadedFile.type : (responseField?.mimeType || '');
+        const isImage = mimeType.startsWith('image/');
+        
+        // Choose appropriate icon based on MIME type
+        let FileTypeIcon = FileIcon;
+        if (isImage) {
+          FileTypeIcon = ImageIcon;
+        } else if (mimeType.includes('pdf')) {
+          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-red-500" />;
+        } else if (mimeType.includes('word') || mimeType.includes('document')) {
+          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-blue-500" />;
+        } else if (mimeType.includes('excel') || mimeType.includes('sheet')) {
+          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-green-500" />;
+        }
+
         return (
           <div className="space-y-2">
-            {fileValue && !isFileDeleted ? (
+            {/* Show either the existing file or the newly uploaded file */}
+            {((responseField && !isFileDeleted) || uploadedFile) ? (
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2 border p-2 rounded-md">
-                  <FileIcon className="h-5 w-5" />
-                  <span className="text-sm">{fileValue}</span>
-                  <Button
+                  <FileTypeIcon className="h-5 w-5" />
+                  <span className="text-sm">{fileName}</span>
+                  
+                  {/* Only show View link for existing files that haven't been deleted */}
+                  {responseField && !isFileDeleted && !uploadedFile && (
+                    <a
+                      href={(() => {
+                        // Get the file path and ensure it doesn't have a leading slash
+                        const cleanPath = filePath.replace(/^api\/files\//, '');
+                        
+                        // Return the URL path properly formatted
+                        return `/api/files/${cleanPath}`;
+                      })()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      View
+                    </a>
+                  )}
+                  
+                  {/* For newly uploaded files, show "New File" instead of view link */}
+                  {uploadedFile && (
+                    <span className="text-green-500 text-xs font-medium">New File</span>
+                  )}
+                  
+                  <Button 
                     type="button"
-                    variant="ghost"
+                    variant="ghost" 
                     size="sm"
                     onClick={() => handleDeleteFile(field.id)}
                   >
@@ -376,13 +666,11 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                 </div>
               </div>
             ) : (
-              showFileInput[field.id] && (
-                <FileInput
-                  fieldId={field.id}
-                  required={isRequired && !fileValue}
-                  onChange={handleFileChange}
-                />
-              )
+              <FileInput
+                fieldId={field.id}
+                required={isRequired && !responseField?.value}
+                onChange={handleFileChange}
+              />
             )}
           </div>
         );
@@ -419,4 +707,4 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
       </div>
     </form>
   );
-} 
+}

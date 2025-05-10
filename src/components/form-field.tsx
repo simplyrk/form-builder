@@ -92,9 +92,17 @@ function CustomFileInput({
       // Create a modal/dialog to show the camera preview
       const dialog = document.createElement('dialog');
       dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-label', 'Camera');
       
       const container = document.createElement('div');
       container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      
+      // Remove any heading/title that might be added by the browser
+      const heading = document.createElement('div');
+      heading.className = 'hidden';
+      container.appendChild(heading);
       
       // Add video container with proper sizing
       const videoContainer = document.createElement('div');
@@ -150,24 +158,21 @@ function CustomFileInput({
       
       captureBtn.onclick = () => {
         try {
-          // Create a canvas to capture the image
+          // Create a canvas to capture the image but don't display it
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(video, 0, 0);
           
-          // Convert the canvas to a file
+          // Convert the canvas to a file without showing preview
           canvas.toBlob((blob) => {
             if (blob) {
               const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
               console.log('Captured file:', file);
               onChange(file);
-              // Force a re-render by dispatching an input event
-              const event = new Event('input', { bubbles: true });
-              document.getElementById(id)?.dispatchEvent(event);
             }
-            cleanup();
+            cleanup(); // Close the camera dialog immediately
           }, 'image/jpeg', 0.9);
         } catch (error) {
           console.error('Error capturing photo:', error);
@@ -190,14 +195,17 @@ function CustomFileInput({
 
   return (
     <div className="flex items-center space-x-2">
-      <Input
-        id={id}
-        type="file"
-        accept="image/*"
-        onChange={(e) => onChange(e.target.files?.[0] || null)}
-        required={required}
-        disabled={disabled}
-      />
+      <div className="flex-1">
+        <Input
+          id={id}
+          type="file"
+          className="w-full"
+          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*"
+          onChange={(e) => onChange(e.target.files?.[0] || null)}
+          required={required}
+          disabled={disabled}
+        />
+      </div>
       <Button
         type="button"
         variant="outline"
@@ -328,29 +336,6 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                 onChange(file);
               }}
             />
-            {value instanceof File && (
-              <div className="relative">
-                <Image
-                  src={URL.createObjectURL(value)}
-                  alt="Preview"
-                  width={320}
-                  height={240}
-                  style={{ maxWidth: '20rem', borderRadius: '0.5rem', objectFit: 'contain', width: '100%', height: 'auto' }}
-                  loader={({ src }) => src}
-                  unoptimized
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    onChange(null);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           </div>
         );
       default:

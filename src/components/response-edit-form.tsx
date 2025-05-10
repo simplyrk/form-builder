@@ -611,16 +611,14 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
         const mimeType = uploadedFile ? uploadedFile.type : (responseField?.mimeType || '');
         const isImage = mimeType.startsWith('image/');
         
-        // Choose appropriate icon based on MIME type
-        let FileTypeIcon = FileIcon;
-        if (isImage) {
-          FileTypeIcon = ImageIcon;
-        } else if (mimeType.includes('pdf')) {
-          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-red-500" />;
+        // Get the appropriate icon color based on MIME type
+        let iconColor = "";
+        if (mimeType.includes('pdf')) {
+          iconColor = "text-red-500";
         } else if (mimeType.includes('word') || mimeType.includes('document')) {
-          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-blue-500" />;
+          iconColor = "text-blue-500";
         } else if (mimeType.includes('excel') || mimeType.includes('sheet')) {
-          FileTypeIcon = () => <FileIcon className="h-5 w-5 text-green-500" />;
+          iconColor = "text-green-500";
         }
 
         return (
@@ -629,7 +627,11 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
             {((responseField && !isFileDeleted) || uploadedFile) ? (
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2 border p-2 rounded-md">
-                  <FileTypeIcon className="h-5 w-5" />
+                  {isImage ? (
+                    <ImageIcon className="h-5 w-5" />
+                  ) : (
+                    <FileIcon className={`h-5 w-5 ${iconColor}`} />
+                  )}
                   <span className="text-sm">{fileName}</span>
                   
                   {/* Only show View link for existing files that haven't been deleted */}

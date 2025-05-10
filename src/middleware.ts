@@ -51,7 +51,9 @@ function applySecurityHeaders(response: NextResponse, isAuthRoute: boolean): Nex
  */
 function isAuthenticationRoute(pathname: string): boolean {
   return (
+    pathname.startsWith("/sign-in") ||
     pathname.startsWith("/signin") ||
+    pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/sso-callback") ||
     pathname.includes("sign-in") ||
@@ -77,7 +79,9 @@ export default clerkMiddleware((auth, req) => {
   // Check if route is public
   if (
     req.nextUrl.pathname === "/" ||
+    req.nextUrl.pathname.startsWith("/sign-in") ||
     req.nextUrl.pathname.startsWith("/signin") ||
+    req.nextUrl.pathname.startsWith("/login") ||
     req.nextUrl.pathname.startsWith("/signup") ||
     req.nextUrl.pathname.startsWith("/sso-callback") ||
     req.nextUrl.pathname.startsWith("/forms/") ||

@@ -3,8 +3,6 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import type { Form, Response, FormField, ResponseField, FormResponse } from '@/types/form';
 
-import { EditResponseForm } from './edit-response-form';
-
 
 interface EditResponsePageProps {
   params: {

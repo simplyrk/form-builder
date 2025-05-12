@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -52,8 +52,33 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
       options: f.options,
       order: f.order,
       helpText: f.helpText,
+      linkedFormId: f.linkedFormId,
     })) || []
   );
+  const [availableForms, setAvailableForms] = useState<Form[]>([]);
+  const [isLoadingForms, setIsLoadingForms] = useState(false);
+
+  // Fetch available forms for linking
+  useEffect(() => {
+    const fetchAvailableForms = async () => {
+      try {
+        setIsLoadingForms(true);
+        const response = await fetch('/api/forms/available');
+        if (!response.ok) {
+          throw new Error('Failed to fetch available forms');
+        }
+        const data = await response.json();
+        setAvailableForms(data);
+      } catch (error) {
+        console.error('Error fetching available forms:', error);
+        toast.error('Could not load available forms for linking');
+      } finally {
+        setIsLoadingForms(false);
+      }
+    };
+
+    fetchAvailableForms();
+  }, []);
 
   /**
    * Adds a new field to the form
@@ -68,6 +93,8 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
         required: false,
         options: [],
         order: fields.length,
+        helpText: '',
+        linkedFormId: '',
       },
     ]);
   };
@@ -117,6 +144,21 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Debug logging for linkedSubmission fields
+    const linkedFields = fields.filter(field => field.type === 'linkedSubmission');
+    console.log('Linked submission fields:', linkedFields);
+    
+    // Validate linked submission fields have a form selected
+    const hasInvalidLinkedFields = fields.some(
+      field => field.type === 'linkedSubmission' && !field.linkedFormId
+    );
+    
+    if (hasInvalidLinkedFields) {
+      toast.error('Linked Submission fields must have a linked form selected');
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       // Create base form data with all fields
@@ -306,6 +348,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                                 <option value="date">Date</option>
                                 <option value="file">File</option>
                                 <option value="picklist">Picklist</option>
+                                <option value="linkedSubmission">Linked Submission</option>
                               </select>
                             </div>
                           </div>
@@ -322,6 +365,39 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                               disabled={isSubmitting}
                             />
                           </div>
+                          
+                          {field.type === 'linkedSubmission' && (
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium">
+                                Linked Form
+                              </label>
+                              <select
+                                className="w-full rounded-md border border-input bg-background px-3 py-2"
+                                value={field.linkedFormId || ''}
+                                onChange={(e) =>
+                                  handleFieldChange(index, { linkedFormId: e.target.value })
+                                }
+                                disabled={isSubmitting || isLoadingForms}
+                              >
+                                <option value="">Select a form to link</option>
+                                {availableForms.map((availableForm) => (
+                                  <option key={availableForm.id} value={availableForm.id}>
+                                    {availableForm.title}
+                                  </option>
+                                ))}
+                              </select>
+                              {isLoadingForms && (
+                                <p className="text-sm text-muted-foreground">
+                                  Loading available forms...
+                                </p>
+                              )}
+                              {!isLoadingForms && availableForms.length === 0 && (
+                                <p className="text-sm text-muted-foreground">
+                                  No published forms available for linking. Publish a form first.
+                                </p>
+                              )}
+                            </div>
+                          )}
                           
                           {(field.type === 'picklist' || field.type === 'select') && (
                             <div className="space-y-2">
@@ -423,4 +499,4 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
       </div>
     </form>
   );
-} 
+}

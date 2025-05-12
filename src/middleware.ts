@@ -86,6 +86,7 @@ export default clerkMiddleware((auth, req) => {
     req.nextUrl.pathname.startsWith("/sso-callback") ||
     req.nextUrl.pathname.startsWith("/forms/") ||
     req.nextUrl.pathname.startsWith("/api/forms/available") ||
+    req.nextUrl.pathname.match(/^\/api\/forms\/[^\/]+\/responses\/search/) ||
     req.nextUrl.pathname.startsWith("/api/responses/user")
   ) {
     // For public routes, return with security headers

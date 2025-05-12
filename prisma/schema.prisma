@@ -24,6 +24,7 @@ model Form {
   createdBy   String
   fields      Field[]
   responses   Response[]
+  linkedFields Field[] @relation("LinkedFields")
 }
 
 model Field {
@@ -36,6 +37,8 @@ model Field {
   helpText    String?
   formId      String
   form        Form     @relation(fields: [formId], references: [id])
+  linkedFormId String?
+  linkedForm   Form?   @relation("LinkedFields", fields: [linkedFormId], references: [id])
   responses   ResponseField[]
 }
 

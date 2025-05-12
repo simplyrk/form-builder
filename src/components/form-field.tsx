@@ -4,7 +4,7 @@
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 
-import { Camera, X, ImageIcon, FileIcon, Trash2, CheckCircle } from 'lucide-react';
+import { Camera, X, ImageIcon, FileIcon, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // UI component imports
@@ -14,6 +14,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from '@/types/form';
+
+// Import the linked submission components
+import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 
 // Add FieldValue and FieldType type definitions
 
@@ -33,6 +37,7 @@ type FieldValue = {
   time: string;
   datetime: string;
   picklist: string;
+  linkedSubmission: string;
 };
 
 type FieldType = keyof FieldValue;
@@ -403,6 +408,64 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                 onChange(file);
               }}
             />
+          </div>
+        );
+      case 'linkedSubmission':
+        return (
+          <div className="space-y-2">
+            {!value ? (
+              field.linkedFormId ? (
+                <LinkedSubmissionSearch
+                  formId={field.linkedFormId}
+                  buttonLabel="Select Submission"
+                  onSelect={(submission) => {
+                    // Just use the ID as the value
+                    onChange(submission.id);
+                  }}
+                  disabled={disabled}
+                />
+              ) : (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
+                  <p className="text-sm font-medium flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2 text-yellow-600" />
+                    This field is not configured
+                  </p>
+                  <p className="text-xs mt-1 mb-2 pl-6">
+                    The form administrator needs to select which form to link to for this field.
+                  </p>
+                  <div className="pl-6">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="bg-white border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      onClick={() => {
+                        // Check if we can get the form ID from the URL
+                        const url = window.location.pathname;
+                        const match = url.match(/\/forms\/([^\/]+)/);
+                        const formId = match ? match[1] : null;
+                        
+                        if (formId) {
+                          // Redirect to form editor
+                          window.location.href = `/admin/forms/${formId}/edit`;
+                        } else {
+                          toast.info("Linked form selection must be done in the form builder when editing the form.", {
+                            duration: 5000,
+                          });
+                        }
+                      }}
+                    >
+                      Go to Form Editor
+                    </Button>
+                  </div>
+                </div>
+              )
+            ) : (
+              <LinkedSubmissionDisplay
+                value={value as string}
+                onRemove={() => onChange('')}
+                disabled={disabled}
+              />
+            )}
           </div>
         );
       default:

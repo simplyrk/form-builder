@@ -54,6 +54,7 @@ const formFieldSchema = z.object({
   required: z.boolean(),
   options: z.array(z.string()).optional(),
   helpText: z.string().optional(),
+  linkedFormId: z.string().optional().nullable(),
 });
 
 /**
@@ -74,6 +75,13 @@ export async function createForm(data: {
       return { success: false, error: 'Not authenticated' };
     }
 
+    // Debug logging
+    console.log('Creating form with fields:', data.fields);
+    
+    // Check for linkedSubmission fields
+    const linkedFields = data.fields.filter(field => field.type === 'linkedSubmission');
+    console.log('Linked submission fields:', linkedFields);
+
     const form = await prisma.form.create({
       data: {
         title: data.title,
@@ -82,17 +90,32 @@ export async function createForm(data: {
         published: false,
         createdBy: userId,
         fields: {
-          create: data.fields.map((field, index) => ({
-            ...field,
-            order: index,
-            helpText: field.helpText || null,
-          })),
+          create: data.fields.map((field, index) => {
+            // Log each field being created
+            if (field.type === 'linkedSubmission') {
+              console.log(`Creating linkedSubmission field: `, {
+                label: field.label,
+                linkedFormId: field.linkedFormId || null,
+              });
+            }
+            
+            return {
+              ...field,
+              order: index,
+              helpText: field.helpText || null,
+              linkedFormId: field.linkedFormId || null,
+            };
+          }),
         },
       },
       include: {
         fields: true,
       },
     });
+
+    // Check if linkedSubmission fields were created correctly
+    const createdLinkedFields = form.fields.filter(field => field.type === 'linkedSubmission');
+    console.log('Created linked submission fields:', createdLinkedFields);
 
     revalidatePath('/');
     revalidatePath('/admin');
@@ -130,6 +153,13 @@ export async function updateForm(
       return { success: false, error: 'Not authenticated' };
     }
 
+    // Debug logging
+    console.log('Updating form with fields:', data.fields);
+    
+    // Check for linkedSubmission fields
+    const linkedFields = data.fields.filter(field => field.type === 'linkedSubmission');
+    console.log('Linked submission fields for update:', linkedFields);
+
     // First fetch the existing form and its fields
     const existingForm = await prisma.form.findUnique({
       where: { id: formId },
@@ -161,6 +191,14 @@ export async function updateForm(
       for (let i = 0; i < data.fields.length; i++) {
         const fieldData = data.fields[i];
         
+        // Debug logging for linkedSubmission fields
+        if (fieldData.type === 'linkedSubmission') {
+          console.log(`Updating/creating linkedSubmission field at index ${i}:`, {
+            label: fieldData.label,
+            linkedFormId: fieldData.linkedFormId || null,
+          });
+        }
+        
         // If there's an existing field at this index, update it
         if (i < existingFieldIds.length) {
           await prisma.field.update({
@@ -172,6 +210,7 @@ export async function updateForm(
               options: fieldData.options || [],
               order: i,
               helpText: fieldData.helpText || null,
+              linkedFormId: fieldData.linkedFormId || null,
             }
           });
         } else {
@@ -185,6 +224,7 @@ export async function updateForm(
               options: fieldData.options || [],
               order: i,
               helpText: fieldData.helpText || null,
+              linkedFormId: fieldData.linkedFormId || null,
             }
           });
         }
@@ -216,6 +256,10 @@ export async function updateForm(
         include: { fields: true }
       });
     });
+
+    // Check if linkedSubmission fields were updated correctly
+    const updatedLinkedFields = result?.fields.filter(field => field.type === 'linkedSubmission');
+    console.log('Updated linked submission fields:', updatedLinkedFields);
 
     revalidatePath('/');
     revalidatePath('/admin');

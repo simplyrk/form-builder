@@ -36,6 +36,8 @@ export interface FieldInput {
   order: number;
   /** Optional help text to display under the field */
   helpText?: string;
+  /** ID of the linked form (for linkedSubmission fields) */
+  linkedFormId?: string;
 }
 
 export type FieldType = 
@@ -53,7 +55,8 @@ export type FieldType =
   | 'checkbox'
   | 'radio'
   | 'file'
-  | 'picklist';
+  | 'picklist'
+  | 'linkedSubmission';
 
 export interface FormField {
   id: string;
@@ -67,6 +70,8 @@ export interface FormField {
   updatedAt: Date;
   /** Optional help text to display under the field */
   helpText?: string;
+  /** ID of the linked form (for linkedSubmission fields) */
+  linkedFormId?: string;
 }
 
 /**

@@ -20,7 +20,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { ImageIcon, FileIcon, Trash2, Camera, CheckCircle } from 'lucide-react';
+import { ImageIcon, FileIcon, Trash2, Camera, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
@@ -31,6 +31,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 import type { Form, FormField, Response, FormResponse, ResponseField } from '@/types/form';
 import { log, error } from '@/utils/logger';
 
@@ -618,6 +620,41 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                 <input type="hidden" name={`${field.id}[]`} value={option} />
               </div>
             ))}
+          </div>
+        );
+
+      case 'linkedSubmission':
+        return (
+          <div className="space-y-2">
+            {!value ? (
+              field.linkedFormId ? (
+                <LinkedSubmissionSearch
+                  formId={field.linkedFormId}
+                  buttonLabel="Select Submission"
+                  onSelect={(submission) => {
+                    // Just use the ID as the value
+                    handleFieldChange(field.id, submission.id);
+                  }}
+                  disabled={isSubmitting}
+                />
+              ) : (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
+                  <p className="text-sm font-medium flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2 text-yellow-600" />
+                    This field is not configured
+                  </p>
+                  <p className="text-xs mt-1 mb-2 pl-6">
+                    The form administrator needs to select which form to link to for this field.
+                  </p>
+                </div>
+              )
+            ) : (
+              <LinkedSubmissionDisplay
+                value={value as string}
+                onRemove={() => handleFieldChange(field.id, '')}
+                disabled={isSubmitting}
+              />
+            )}
           </div>
         );
 

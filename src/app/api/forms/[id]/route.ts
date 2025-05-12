@@ -1,7 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { auth } from "@clerk/nextjs/server";
+
 import { prisma } from "@/lib/prisma";
+import type { FieldInput } from "@/types/form";
 
 // Define interface for linked form type
 interface LinkedForm {
@@ -150,7 +152,7 @@ export async function PUT(
       // Create new fields
       if (fields && fields.length > 0) {
         await tx.field.createMany({
-          data: fields.map((field: any) => ({
+          data: fields.map((field: FieldInput) => ({
             ...field,
             formId: id,
           })),

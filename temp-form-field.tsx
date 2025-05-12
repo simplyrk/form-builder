@@ -1,17 +1,16 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-
 import Image from 'next/image';
 
 import { AlertCircle, Camera, CheckCircle, FileIcon, ImageIcon, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
-import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
+import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/types/form';

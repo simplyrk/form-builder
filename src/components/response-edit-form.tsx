@@ -24,6 +24,8 @@ import { ImageIcon, FileIcon, Trash2, Camera, CheckCircle, AlertCircle } from 'l
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
+import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -31,8 +33,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
-import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 import type { Form, FormField, Response, FormResponse, ResponseField } from '@/types/form';
 import { log, error } from '@/utils/logger';
 

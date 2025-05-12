@@ -5,7 +5,7 @@
 interface Submission {
   id: string;
   formId: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface LinkedSubmissionValue {
@@ -13,7 +13,7 @@ interface LinkedSubmissionValue {
   formId: string;
   displayValue: string;
   displayFields: string[];
-  submissionData: Record<string, any>;
+  submissionData: Record<string, unknown>;
 }
 
 /**

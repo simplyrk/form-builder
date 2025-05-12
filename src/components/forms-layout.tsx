@@ -29,11 +29,13 @@ export function FormsLayout({ children }: FormsLayoutProps) {
   
   useEffect(() => {
     // Extract form id from url if exists
-    const match = pathname.match(/\/forms\/([a-zA-Z0-9-_]+)/);
-    if (match) {
-      setCurrentFormId(match[1]);
-    } else {
-      setCurrentFormId(null);
+    if (pathname) {
+      const match = pathname.match(/\/forms\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        setCurrentFormId(match[1]);
+      } else {
+        setCurrentFormId(null);
+      }
     }
   }, [pathname]);
   

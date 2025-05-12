@@ -1,0 +1,9 @@
+'use client';
+
+import React, { useRef, useState } from 'react';
+import Image from 'next/image';
+
+import { Camera, X, ImageIcon, FileIcon, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';

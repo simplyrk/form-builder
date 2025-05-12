@@ -1,23 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useDebounce } from '@/lib/use-debounce';
+
 import { Loader2, Search, X, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useDebounce } from '@/lib/use-debounce';
+
+interface SubmissionField {
+  id: string;
+  fieldId: string;
+  value: string;
+}
+
+interface Submission {
+  id: string;
+  createdAt: string;
+  fields: SubmissionField[];
+}
 
 interface LinkedSubmissionSearchProps {
   formId: string;
-  onSelect: (submission: any) => void;
+  onSelect: (submission: Submission) => void;
   buttonLabel?: string;
   disabled?: boolean;
 }
@@ -33,7 +40,7 @@ export function LinkedSubmissionSearch({
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<Submission[]>([]);
   const [hasResponses, setHasResponses] = useState<boolean | null>(null);
   const debouncedQuery = useDebounce(query, 300);
 
@@ -170,16 +177,16 @@ export function LinkedSubmissionSearch({
     }
   }, [open]);
 
-  const handleSelect = (submission: any) => {
+  const handleSelect = (submission: Submission) => {
     onSelect(submission);
     setOpen(false);
   };
 
   // Format result item for display
-  const formatResultDisplay = (result: any) => {
+  const formatResultDisplay = (result: Submission) => {
     // Create a readable display of submission fields
     const fieldValues = result.fields
-      .map((field: any) => field.value)
+      .map((field: SubmissionField) => field.value)
       .filter(Boolean)
       .slice(0, 3); // Show first 3 non-empty values
       
@@ -320,4 +327,4 @@ export function LinkedSubmissionSearch({
       </DialogContent>
     </Dialog>
   );
-} 
+}

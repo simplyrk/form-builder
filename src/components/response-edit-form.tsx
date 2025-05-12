@@ -649,12 +649,16 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                 </div>
               )
             ) : (
-              <LinkedSubmissionDisplay
-                value={value as string}
-                onRemove={() => handleFieldChange(field.id, '')}
-                disabled={isSubmitting}
-                formId={field.linkedFormId}
-              />
+              <>
+                <LinkedSubmissionDisplay
+                  value={value as string}
+                  onRemove={() => handleFieldChange(field.id, '')}
+                  disabled={isSubmitting}
+                  formId={field.linkedFormId}
+                />
+                {/* Add a hidden input to ensure the value is included in the form submission */}
+                <input type="hidden" name={field.id} value={value as string} />
+              </>
             )}
           </div>
         );

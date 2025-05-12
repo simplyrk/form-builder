@@ -14,8 +14,6 @@ import { format } from 'date-fns';
 import { Pencil, FileIcon, ImageIcon, ExternalLink } from 'lucide-react';
 
 import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
-
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -252,4 +250,4 @@ export function ResponseTable({ form, responses, userMap, onDelete, isDeleting =
       </div>
     </div>
   );
-} 
+}

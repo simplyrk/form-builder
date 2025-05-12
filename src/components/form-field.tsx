@@ -461,6 +461,7 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                 value={value as string}
                 onRemove={() => onChange('')}
                 disabled={disabled}
+                formId={field.linkedFormId}
               />
             )}
           </div>

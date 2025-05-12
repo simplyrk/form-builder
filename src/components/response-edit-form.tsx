@@ -653,6 +653,7 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                 value={value as string}
                 onRemove={() => handleFieldChange(field.id, '')}
                 disabled={isSubmitting}
+                formId={field.linkedFormId}
               />
             )}
           </div>

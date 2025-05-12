@@ -11,7 +11,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { format } from 'date-fns';
-import { Pencil, FileIcon, ImageIcon } from 'lucide-react';
+import { Pencil, FileIcon, ImageIcon, ExternalLink } from 'lucide-react';
+
+import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 
 
 import {
@@ -79,6 +81,17 @@ function renderFieldValue(field: FormField, responseField: ResponseField | undef
       );
     }
     return 'No file uploaded';
+  }
+  
+  // Handle linked submission fields
+  if (field.type === 'linkedSubmission' && responseField.value) {
+    return (
+      <LinkedSubmissionDisplay
+        value={responseField.value}
+        formId={field.linkedFormId}
+        displayStyle="simple" // Use a simpler display style for tables
+      />
+    );
   }
 
   // Handle other field types

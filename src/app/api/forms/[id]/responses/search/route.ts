@@ -27,7 +27,9 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    // Properly await the params object as required by Next.js
+    const { id } = await Promise.resolve(params);
+    
     if (!id) {
       return NextResponse.json(
         { error: "Missing form ID" },
@@ -114,4 +116,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

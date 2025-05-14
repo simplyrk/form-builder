@@ -1,35 +1,41 @@
-import { Logo } from '@/components/logo';
-import { Navbar } from '@/components/navbar';
-import { Providers } from '@/components/providers';
+import { ClerkProvider } from '@clerk/nextjs';
+import type { Metadata } from 'next';
 import './globals.css';
 
-export const metadata = {
-  title: 'Form Builder',
-  description: 'Create and manage forms easily',
+import { Navbar } from '@/components/navbar';
+import { ThemeProvider } from '@/components/theme-provider';
+
+export const metadata: Metadata = {
+  title: 'CursorCRM',
+  description: 'Professional form management and customer database system',
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="font-poppins">
-        <Providers>
-          <div className="min-h-screen bg-background">
-            <header className="border-b">
-              <div className="container mx-auto py-4">
-                <div className="flex items-center justify-between">
-                  <Logo />
-                  <Navbar />
-                </div>
-              </div>
-            </header>
-            <main>{children}</main>
-          </div>
-        </Providers>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+        </head>
+        <body className="min-h-screen font-sans antialiased bg-background text-foreground">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="relative flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+            </div>
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

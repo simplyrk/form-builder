@@ -1,6 +1,5 @@
 'use client';
 
-/* eslint-disable import/order */
 import { useState } from 'react';
 
 import Link from 'next/link';
@@ -12,9 +11,7 @@ import { toggleFormPublish, deleteForm } from '@/app/actions/forms';
 import { Button } from '@/components/ui/button';
 import { TEXT } from '@/lib/text-constants';
 import { cn } from '@/lib/utils';
-
 import { Form } from '@/types/form';
-/* eslint-enable import/order */
 
 interface AdminPageClientProps {
   forms: Form[];
@@ -93,7 +90,7 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-foreground">{TEXT.MANAGE_FORMS}</h1>
         <Link href="/admin/forms/new">
-          <Button variant="accent" size="lg">{TEXT.CREATE_NEW_FORM}</Button>
+          <Button variant="default" size="lg">{TEXT.CREATE_NEW_FORM}</Button>
         </Link>
       </div>
 
@@ -191,4 +188,4 @@ export default function AdminPageClient({ forms: initialForms }: AdminPageClient
       )}
     </div>
   );
-} 
+}

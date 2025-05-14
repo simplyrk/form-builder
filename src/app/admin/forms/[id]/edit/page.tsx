@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
 
 import { FormBuilder } from '@/components/form-builder';
+import { Container } from '@/components/ui/container';
 import { prisma } from '@/lib/prisma';
 import type { Form } from '@/types/form';
 
@@ -32,13 +33,15 @@ export default async function EditFormPage({ params }: EditFormPageProps) {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Edit Form</h1>
-        <p className="text-muted-foreground">{form.title}</p>
-      </div>
+    <div className="p-4 sm:p-6">
+      <Container size="full">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold sm:text-3xl text-left text-foreground">Edit Form</h1>
+          <p className="text-muted-foreground text-left">{form.title}</p>
+        </div>
 
-      <FormBuilder form={form} />
+        <FormBuilder form={form} />
+      </Container>
     </div>
   );
-} 
+}

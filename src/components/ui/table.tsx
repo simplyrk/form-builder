@@ -4,12 +4,21 @@ import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  React.HTMLAttributes<HTMLTableElement> & {
+    hoverable?: boolean
+    striped?: boolean
+    compact?: boolean
+    bordered?: boolean
+  }
+>(({ className, hoverable, striped, compact, bordered, ...props }, ref) => (
+  <div className="w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn(
+        "w-full caption-bottom text-sm",
+        bordered && "border border-border",
+        className
+      )}
       {...props}
     />
   </div>
@@ -20,17 +29,25 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead ref={ref} className={cn("bg-muted/50", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
 const TableBody = React.forwardRef<
   HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableSectionElement> & {
+    striped?: boolean
+    hoverable?: boolean
+  }
+>(({ className, striped, hoverable, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={cn("[&_tr:last-child]:border-0", className)}
+    className={cn(
+      "divide-y divide-border",
+      hoverable && "[&>tr:hover]:bg-muted/50",
+      striped && "[&>tr:nth-child(even)]:bg-muted/50",
+      className
+    )}
     {...props}
   />
 ))
@@ -42,7 +59,7 @@ const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("bg-primary font-medium text-primary-foreground", className)}
+    className={cn("bg-muted/50 font-medium", className)}
     {...props}
   />
 ))
@@ -50,12 +67,15 @@ TableFooter.displayName = "TableFooter"
 
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableRowElement> & {
+    isSelected?: boolean
+  }
+>(({ className, isSelected, ...props }, ref) => (
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "transition-colors data-[state=selected]:bg-muted/50",
+      isSelected && "bg-muted/80",
       className
     )}
     {...props}
@@ -80,11 +100,17 @@ TableHead.displayName = "TableHead"
 
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.TdHTMLAttributes<HTMLTableCellElement> & {
+    truncate?: boolean
+  }
+>(({ className, truncate, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn(
+      "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+      truncate && "max-w-[150px] truncate",
+      className
+    )}
     {...props}
   />
 ))
@@ -111,4 +137,4 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-} 
+}

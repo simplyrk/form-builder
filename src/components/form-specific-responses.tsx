@@ -67,7 +67,7 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
           <h2 className="text-2xl font-bold">{form.title}</h2>
           <p className="text-muted-foreground">{form.description}</p>
         </div>
-        <Button variant="accent" size="lg" onClick={() => router.push(`/forms/${form.id}`)}>
+        <Button variant="default" size="lg" onClick={() => router.push(`/forms/${form.id}`)}>
           Fill Form
         </Button>
       </div>
@@ -92,4 +92,4 @@ export function FormSpecificResponses({ form, responses }: FormSpecificResponses
       </Card>
     </div>
   );
-} 
+}

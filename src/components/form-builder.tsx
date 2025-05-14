@@ -212,10 +212,10 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 text-left">
       <div className="space-y-4">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
+          <label htmlFor="title" className="block text-sm font-medium mb-1 text-left">
             Form Title
           </label>
           <Input
@@ -224,11 +224,12 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
             onChange={(e) => setTitle(e.target.value)}
             required
             disabled={isSubmitting}
+            className="max-w-3xl"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
+          <label htmlFor="description" className="block text-sm font-medium mb-1 text-left">
             Description
           </label>
           <Textarea
@@ -236,11 +237,12 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={isSubmitting}
+            className="max-w-3xl"
           />
         </div>
         
         <div>
-          <label htmlFor="formGroup" className="block text-sm font-medium mb-1">
+          <label htmlFor="formGroup" className="block text-sm font-medium mb-1 text-left">
             Form Group
           </label>
           <Input
@@ -249,13 +251,14 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
             onChange={(e) => setFormGroup(e.target.value)}
             placeholder="Optional - Group forms with the same value"
             disabled={isSubmitting}
+            className="max-w-3xl"
           />
         </div>
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Form Fields</h3>
+          <h3 className="text-lg font-medium text-left">Form Fields</h3>
           <Button 
             type="button" 
             onClick={handleAddField} 
@@ -317,7 +320,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                         <CardContent className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium">
+                              <label className="block text-sm font-medium text-left">
                                 Field Label
                               </label>
                               <Input
@@ -330,7 +333,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                               />
                             </div>
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium">
+                              <label className="block text-sm font-medium text-left">
                                 Field Type
                               </label>
                               <select
@@ -353,7 +356,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium">
+                            <label className="block text-sm font-medium text-left">
                               Help Text
                             </label>
                             <Input
@@ -368,7 +371,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                           
                           {field.type === 'linkedSubmission' && (
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium">
+                              <label className="block text-sm font-medium text-left">
                                 Linked Form
                               </label>
                               <select
@@ -387,12 +390,12 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                                 ))}
                               </select>
                               {isLoadingForms && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground text-left">
                                   Loading available forms...
                                 </p>
                               )}
                               {!isLoadingForms && availableForms.length === 0 && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground text-left">
                                   No published forms available for linking. Publish a form first.
                                 </p>
                               )}
@@ -401,7 +404,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                           
                           {(field.type === 'picklist' || field.type === 'select') && (
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium">
+                              <label className="block text-sm font-medium text-left">
                                 Options (one per line)
                               </label>
                               <div className="flex flex-col space-y-2">

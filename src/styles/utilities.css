@@ -1,0 +1,268 @@
+/* Responsive spacing utilities */
+.responsive-p {
+  padding: 1rem;
+}
+
+.responsive-py {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.responsive-px {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.responsive-m {
+  margin: 1rem;
+}
+
+.responsive-my {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.responsive-mx {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.responsive-gap {
+  gap: 1rem;
+}
+
+/* Responsive font sizes */
+.text-responsive-xs {
+  font-size: 0.75rem;
+}
+
+.text-responsive-sm {
+  font-size: 0.875rem;
+}
+
+.text-responsive-base {
+  font-size: 1rem;
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem;
+}
+
+.text-responsive-xl {
+  font-size: 1.25rem;
+}
+
+.text-responsive-2xl {
+  font-size: 1.5rem;
+}
+
+.text-responsive-3xl {
+  font-size: 1.875rem;
+}
+
+/* Responsive spacing on tablet and up */
+@media (min-width: 640px) {
+  .responsive-p {
+    padding: 1.5rem;
+  }
+  
+  .responsive-py {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  .responsive-px {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  .responsive-m {
+    margin: 1.5rem;
+  }
+  
+  .responsive-my {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .responsive-mx {
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+  }
+  
+  .responsive-gap {
+    gap: 1.5rem;
+  }
+  
+  .text-responsive-xs {
+    font-size: 0.75rem;
+  }
+  
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-responsive-base {
+    font-size: 1rem;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1.125rem;
+  }
+  
+  .text-responsive-xl {
+    font-size: 1.25rem;
+  }
+  
+  .text-responsive-2xl {
+    font-size: 1.5rem;
+  }
+  
+  .text-responsive-3xl {
+    font-size: 2rem;
+  }
+}
+
+/* Responsive spacing on desktop */
+@media (min-width: 1024px) {
+  .responsive-p {
+    padding: 2rem;
+  }
+  
+  .responsive-py {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  
+  .responsive-px {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  
+  .responsive-m {
+    margin: 2rem;
+  }
+  
+  .responsive-my {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .responsive-mx {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+  
+  .responsive-gap {
+    gap: 2rem;
+  }
+  
+  .text-responsive-xs {
+    font-size: 0.75rem;
+  }
+  
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-responsive-base {
+    font-size: 1rem;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1.125rem;
+  }
+  
+  .text-responsive-xl {
+    font-size: 1.25rem;
+  }
+  
+  .text-responsive-2xl {
+    font-size: 1.5rem;
+  }
+  
+  .text-responsive-3xl {
+    font-size: 2.25rem;
+  }
+}
+
+/* Utility classes for responsive layout */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .stack-sm {
+    flex-direction: row;
+  }
+}
+
+.row-sm {
+  display: flex;
+  flex-direction: row;
+}
+
+@media (min-width: 640px) {
+  .row-sm {
+    flex-direction: column;
+  }
+}
+
+/* Responsive grid utilities */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .responsive-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  
+  .responsive-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}

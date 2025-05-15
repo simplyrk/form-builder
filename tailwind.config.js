@@ -89,6 +89,12 @@ export default {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
+      backgroundColor: {
+        'popover-solid': {
+          light: '#ffffff',
+          dark: '#1e293b',
+        },
+      },
     },
   },
   plugins: [],

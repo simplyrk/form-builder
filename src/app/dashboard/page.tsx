@@ -15,7 +15,7 @@ export default function DashboardPage() {
   if (!isLoaded) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <header className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-muted-foreground mt-2">
             Welcome back, {user?.firstName || 'User'}
           </p>
         </div>
@@ -36,19 +36,19 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="col-span-2 space-y-6">
-          <div className="border rounded-lg p-6 bg-white shadow-sm">
+          <div className="border rounded-lg p-6 bg-card text-card-foreground shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Using Linked Submissions</h2>
-              <Link2 className="h-5 w-5 text-blue-600" />
+              <Link2 className="h-5 w-5 text-primary" />
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               You can now link submissions from one form to another, allowing you to create relationships between your data.
             </p>
-            <div className="bg-gray-50 p-4 rounded-md mb-4">
-              <h3 className="font-medium mb-2 text-gray-800">How to use linked submissions:</h3>
-              <ol className="list-decimal list-inside space-y-2 text-gray-600">
+            <div className="bg-muted/30 p-4 rounded-md mb-4 border border-border/40">
+              <h3 className="font-medium mb-2">How to use linked submissions:</h3>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
                 <li>Create a form that will store the primary data</li>
-                <li>Create a second form with a <code className="text-sm bg-gray-200 px-1 py-0.5 rounded">linkedSubmission</code> field type</li>
+                <li>Create a second form with a <code className="text-sm bg-muted px-1 py-0.5 rounded">linkedSubmission</code> field type</li>
                 <li>Select the primary form as the linked form</li>
                 <li>When filling out the second form, you can search and select submissions from the primary form</li>
               </ol>
@@ -61,27 +61,27 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="border rounded-lg p-6 bg-white shadow-sm">
+          <div className="border rounded-lg p-6 bg-card text-card-foreground shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Use Cases</h2>
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="h-5 w-5 text-primary" />
             </div>
             <div className="space-y-4">
-              <div className="p-3 border rounded-md">
+              <div className="p-3 border border-border/60 rounded-md">
                 <h3 className="font-medium">Customer Orders</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-muted-foreground text-sm mt-1">
                   Create a Customers form and an Orders form. Link each order to a customer.
                 </p>
               </div>
-              <div className="p-3 border rounded-md">
+              <div className="p-3 border border-border/60 rounded-md">
                 <h3 className="font-medium">Event Registration</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-muted-foreground text-sm mt-1">
                   Create an Events form and a Registration form. Link registrations to specific events.
                 </p>
               </div>
-              <div className="p-3 border rounded-md">
+              <div className="p-3 border border-border/60 rounded-md">
                 <h3 className="font-medium">Project Tasks</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-muted-foreground text-sm mt-1">
                   Create a Projects form and a Tasks form. Link tasks to specific projects.
                 </p>
               </div>
@@ -90,7 +90,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="border rounded-lg p-6 bg-white shadow-sm">
+          <div className="border rounded-lg p-6 bg-card text-card-foreground shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
             <div className="space-y-2">
               <Link href="/admin/forms">
@@ -114,27 +114,27 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="border rounded-lg p-6 bg-white shadow-sm">
+          <div className="border rounded-lg p-6 bg-card text-card-foreground shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Supported Field Types</h2>
-            <ul className="space-y-2 text-gray-600">
+            <ul className="space-y-2 text-muted-foreground">
               <li className="flex items-center">
-                <ChevronsUpDown className="h-4 w-4 mr-2 text-blue-600" />
+                <ChevronsUpDown className="h-4 w-4 mr-2 text-primary" />
                 Text, Textarea, Email, URL
               </li>
               <li className="flex items-center">
-                <ChevronsUpDown className="h-4 w-4 mr-2 text-blue-600" />
+                <ChevronsUpDown className="h-4 w-4 mr-2 text-primary" />
                 Number, Date, Time
               </li>
               <li className="flex items-center">
-                <ChevronsUpDown className="h-4 w-4 mr-2 text-blue-600" />
+                <ChevronsUpDown className="h-4 w-4 mr-2 text-primary" />
                 Select, Radio, Checkbox
               </li>
               <li className="flex items-center">
-                <ChevronsUpDown className="h-4 w-4 mr-2 text-blue-600" />
+                <ChevronsUpDown className="h-4 w-4 mr-2 text-primary" />
                 File Upload
               </li>
               <li className="flex items-center">
-                <ChevronsUpDown className="h-4 w-4 mr-2 text-blue-600" />
+                <ChevronsUpDown className="h-4 w-4 mr-2 text-primary" />
                 <span className="font-medium">Linked Submission</span>
               </li>
             </ul>

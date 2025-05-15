@@ -80,13 +80,13 @@ function CustomFileInput({
       
       // Create a modal/dialog to show the camera preview
       const dialog = document.createElement('dialog');
-      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70';
       dialog.setAttribute('aria-modal', 'true');
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('aria-label', 'Camera');
       
       const container = document.createElement('div');
-      container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      container.className = 'bg-card p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full border border-border/40 text-card-foreground';
       
       // Remove any heading/title that might be added by the browser
       const heading = document.createElement('div');
@@ -95,11 +95,11 @@ function CustomFileInput({
       
       const captureBtn = document.createElement('button');
       captureBtn.textContent = 'Capture';
-      captureBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600';
+      captureBtn.className = 'px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90';
       
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Close';
-      closeBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 ml-2';
+      closeBtn.className = 'px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 ml-2';
       
       container.appendChild(video);
       container.appendChild(captureBtn);
@@ -144,8 +144,8 @@ function CustomFileInput({
     <div className="flex flex-col space-y-2">
       <div className="flex items-center space-x-2">
         <div className="flex-1">
-          <div className="flex items-center border rounded-md overflow-hidden">
-            <div className="flex-1 p-2 bg-gray-50 text-sm text-gray-500">
+          <div className="flex items-center border border-border/60 rounded-md overflow-hidden">
+            <div className="flex-1 p-2 bg-muted/30 text-sm text-muted-foreground">
               {fileName || 'No file chosen'}
             </div>
           </div>

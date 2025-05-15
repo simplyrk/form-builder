@@ -16,7 +16,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          // Light mode colors
+          colorPrimary: "#2563eb",
+          colorText: "#111827",
+          colorTextSecondary: "#6b7280", 
+          colorBackground: "#ffffff",
+          colorDanger: "#dc2626",
+          colorSuccess: "#059669",
+          colorWarning: "#eab308",
+          colorInputText: "#111827",
+          colorInputBackground: "#f9fafb",
+          colorInputBorder: "#e5e7eb",
+          
+          // Border radius
+          borderRadius: "0.375rem",
+        },
+        elements: {
+          // Add styles for commonly used elements
+          formButtonPrimary: "bg-blue-600 hover:bg-blue-700",
+          card: "bg-white shadow-lg border border-gray-200",
+          footerActionLink: "text-blue-600 hover:text-blue-700",
+        }
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />

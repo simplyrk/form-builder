@@ -205,7 +205,7 @@ export function LinkedSubmissionDisplay({
         {renderTrigger()}
       </PopoverTrigger>
       
-      <PopoverContent className="w-80 p-0 bg-white border shadow-lg" sideOffset={5}>
+      <PopoverContent className="w-80 p-0 border shadow-xl" sideOffset={5} style={{ backgroundColor: 'var(--popover)', opacity: 1 }}>
         <div className="max-h-[500px] overflow-y-auto">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-6">
@@ -219,8 +219,8 @@ export function LinkedSubmissionDisplay({
             </div>
           ) : submissionDetails ? (
             <div>
-              <div className="bg-secondary/50 p-3 border-b">
-                <h3 className="font-medium">{submissionDetails.formTitle}</h3>
+              <div className="bg-muted p-3 border-b">
+                <h3 className="font-medium text-foreground">{submissionDetails.formTitle}</h3>
                 <p className="text-xs text-muted-foreground">
                   Created: {formatDate(submissionDetails.createdAt)}
                 </p>
@@ -237,14 +237,14 @@ export function LinkedSubmissionDisplay({
                     <p className="text-xs font-medium text-muted-foreground mb-1">
                       {field.label}
                     </p>
-                    <div className="text-sm break-words">
+                    <div className="text-sm break-words text-foreground">
                       {formatFieldValue(field)}
                     </div>
                   </div>
                 ))}
               </div>
               
-              <div className="p-2 border-t bg-secondary/30 flex justify-end">
+              <div className="p-2 border-t bg-muted flex justify-end">
                 <Button
                   variant="outline"
                   size="sm"

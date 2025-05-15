@@ -109,10 +109,10 @@ function CustomFileInput({
       
       // Create a modal/dialog to show the camera preview
       const dialog = document.createElement('dialog');
-      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+      dialog.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70';
       
       const container = document.createElement('div');
-      container.className = 'bg-white p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full';
+      container.className = 'bg-card p-4 rounded-lg shadow-lg space-y-4 max-w-md w-full border border-border/40 text-card-foreground';
       
       // Add video container with proper sizing
       const videoContainer = document.createElement('div');
@@ -125,11 +125,11 @@ function CustomFileInput({
       
       const captureBtn = document.createElement('button');
       captureBtn.textContent = 'Take Photo';
-      captureBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-medium';
+      captureBtn.className = 'px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 font-medium';
       
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Cancel';
-      closeBtn.className = 'px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-medium';
+      closeBtn.className = 'px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 font-medium';
       
       buttonContainer.appendChild(captureBtn);
       buttonContainer.appendChild(closeBtn);
@@ -278,8 +278,8 @@ function CustomFileInput({
       
       {/* Show explicit confirmation when a file is captured */}
       {capturedFile && (
-        <div className="mt-2 flex items-center p-2 bg-green-50 border border-green-200 rounded-md text-green-700">
-          <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+        <div className="mt-2 flex items-center p-2 bg-success/10 border border-success/20 rounded-md text-success dark:bg-success/5 dark:border-success/10 dark:text-success/90">
+          <CheckCircle className="h-5 w-5 text-success mr-2" />
           <span className="text-sm font-medium">
             Photo captured: {capturedFile.name}
           </span>
@@ -422,9 +422,9 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                   disabled={disabled}
                 />
               ) : (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
+                <div className="p-3 bg-warning/10 border border-warning/20 rounded-md text-warning-foreground dark:bg-warning/5 dark:border-warning/10">
                   <p className="text-sm font-medium flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-2 text-yellow-600" />
+                    <AlertCircle className="h-4 w-4 mr-2 text-warning" />
                     This field is not configured
                   </p>
                   <p className="text-xs mt-1 mb-2 pl-6">
@@ -434,7 +434,7 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="bg-white border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      className="bg-card border-warning/30 text-warning-foreground hover:bg-warning/5"
                       onClick={() => {
                         // Check if we can get the form ID from the URL
                         const url = window.location.pathname;

@@ -98,7 +98,7 @@ export function ResponseViewForm({ form, response }: ResponseViewFormProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-6">
-            <div className="flex justify-between items-center pb-4 border-b">
+            <div className="flex justify-between items-center pb-4 border-b border-border/40">
               <div className="text-sm text-muted-foreground">
                 Submitted: {formatDate(response.createdAt)}
               </div>
@@ -113,7 +113,7 @@ export function ResponseViewForm({ form, response }: ResponseViewFormProps) {
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </Label>
-                  <div className="p-3 border rounded-md bg-background">
+                  <div className="p-3 border rounded-md bg-card text-card-foreground border-border/40">
                     {renderFieldValue(field, responseField)}
                   </div>
                 </div>

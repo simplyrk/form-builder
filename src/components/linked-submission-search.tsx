@@ -211,7 +211,7 @@ export function LinkedSubmissionSearch({
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-popover text-popover-foreground">
         <DialogHeader>
           <DialogTitle>Search Submissions</DialogTitle>
         </DialogHeader>
@@ -222,16 +222,16 @@ export function LinkedSubmissionSearch({
             <span className="ml-2 text-muted-foreground">Checking form submissions...</span>
           </div>
         ) : hasResponses === false ? (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md text-blue-800 flex flex-col items-center">
-            <Info className="h-12 w-12 text-blue-500 mb-2" />
+          <div className="mt-4 p-4 bg-muted border border-border/60 rounded-md text-foreground flex flex-col items-center">
+            <Info className="h-12 w-12 text-primary mb-2" />
             <h3 className="text-lg font-medium mb-1">No Submissions Yet</h3>
-            <p className="text-sm text-center mb-3">
+            <p className="text-sm text-center mb-3 text-muted-foreground">
               This form doesn't have any submissions that can be linked.
             </p>
             <Button 
               variant="outline" 
               onClick={handleCreateSubmission}
-              className="bg-white"
+              className="bg-background"
             >
               Create a Submission
             </Button>
@@ -260,18 +260,18 @@ export function LinkedSubmissionSearch({
             </div>
 
             {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-800 flex items-start">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="mt-4 p-3 bg-danger/10 border border-danger/30 rounded-md text-foreground flex items-start">
+                <AlertCircle className="h-5 w-5 text-danger mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">{error}</p>
-                  <p className="text-xs mt-1">
+                  <p className="text-xs mt-1 text-muted-foreground">
                     Make sure the linked form exists and has submissions
                   </p>
                   {error.includes("No results found") && (
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="mt-2 bg-white border-red-200 text-red-700 hover:bg-red-50"
+                      className="mt-2 bg-background border-danger/20 text-foreground hover:bg-danger/5"
                       onClick={handleCreateSubmission}
                     >
                       Create a submission
@@ -293,7 +293,7 @@ export function LinkedSubmissionSearch({
                       <button
                         type="button"
                         onClick={() => handleSelect(result)}
-                        className="w-full rounded-md p-2 text-left text-sm hover:bg-secondary"
+                        className="w-full rounded-md p-2 text-left text-sm hover:bg-muted/50"
                       >
                         <p className="font-medium truncate">{formatResultDisplay(result)}</p>
                         <p className="text-xs text-muted-foreground">

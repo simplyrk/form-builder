@@ -58,8 +58,8 @@ export function CustomFileInput({ id, required = false, onChange, disabled = fal
     <div className="flex flex-col space-y-2">
       <div className="flex items-center space-x-2">
         <div className="flex-1">
-          <div className="flex items-center border rounded-md overflow-hidden">
-            <div className="flex-1 p-2 bg-gray-50 text-sm text-gray-500">
+          <div className="flex items-center border border-border/60 rounded-md overflow-hidden">
+            <div className="flex-1 p-2 bg-muted/30 text-sm text-muted-foreground">
               {fileName ? fileName : 'No file chosen'}
             </div>
           </div>
@@ -77,7 +77,7 @@ export function CustomFileInput({ id, required = false, onChange, disabled = fal
           type="button"
           onClick={handleDocumentClick}
           disabled={disabled}
-          className="px-3 py-2 bg-white border rounded-md hover:bg-gray-50 flex items-center space-x-1 text-sm font-medium"
+          className="px-3 py-2 bg-card border border-border/60 rounded-md hover:bg-muted/30 flex items-center space-x-1 text-sm font-medium text-foreground"
         >
           <FileText className="h-4 w-4 mr-1" />
           <span>Browse</span>
@@ -86,7 +86,7 @@ export function CustomFileInput({ id, required = false, onChange, disabled = fal
           type="button"
           onClick={handleCameraClick}
           disabled={disabled}
-          className="px-3 py-2 bg-white border rounded-md hover:bg-gray-50 flex items-center space-x-1 text-sm font-medium"
+          className="px-3 py-2 bg-card border border-border/60 rounded-md hover:bg-muted/30 flex items-center space-x-1 text-sm font-medium text-foreground"
         >
           <Camera className="h-4 w-4 mr-1" />
           <span>Camera</span>

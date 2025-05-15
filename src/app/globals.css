@@ -90,6 +90,24 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
 }
 
+/* Add solid background for popovers to ensure they're opaque */
+.bg-popover {
+  background-color: var(--popover) !important;
+  opacity: 1 !important;
+}
+
+/* Force all popover components to have solid backgrounds */
+[data-radix-popper-content-wrapper] [role="dialog"] {
+  background-color: var(--popover) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+}
+
+.dark .bg-popover {
+  background-color: var(--popover) !important;
+  opacity: 1 !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

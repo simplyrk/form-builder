@@ -295,7 +295,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                             {...provided.dragHandleProps}
                             className="cursor-move"
                           >
-                            <GripVertical className="w-5 h-5 text-gray-400" />
+                            <GripVertical className="w-5 h-5 text-muted-foreground" />
                           </div>
                           <CardTitle className="flex-1">
                             <Input

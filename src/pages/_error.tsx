@@ -12,7 +12,7 @@ function Error({ statusCode }: ErrorProps) {
           ? `An error ${statusCode} occurred on server`
           : 'An error occurred on client'}
       </h1>
-      <p className="text-gray-600 mb-8 text-center max-w-md">
+      <p className="text-muted-foreground mb-8 text-center max-w-md">
         Please try again later or contact support if the problem persists.
       </p>
     </div>

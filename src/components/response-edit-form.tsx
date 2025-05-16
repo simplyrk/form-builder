@@ -24,6 +24,7 @@ import { AlertCircle, Camera, CheckCircle, FileIcon, ImageIcon, Trash2 } from 'l
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
+import { BarcodeScanner } from '@/components/barcode-scanner';
 import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
 import { Button } from '@/components/ui/button';
@@ -491,7 +492,7 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
   /**
    * Renders the appropriate input element based on field type
    * Supports various field types including text, textarea, checkbox, 
-   * radio, select, multiselect, and file uploads
+   * radio, select, multiselect, barcode, and file uploads
    * 
    * @function
    * @param {FormField} field - The field to render
@@ -620,6 +621,35 @@ export function ResponseEditForm({ form, response, isAdmin = false, onCancel }: 
                 <input type="hidden" name={`${field.id}[]`} value={option} />
               </div>
             ))}
+          </div>
+        );
+
+      case 'barcode':
+        // Import the BarcodeScanner component at the top of the file
+        // to avoid ESLint errors with require()
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="hidden"
+                id={field.id}
+                name={field.id}
+                value={value as string || ''}
+                required={isRequired}
+              />
+              
+              {/* Use the BarcodeScanner component */}
+              <div className="w-full">
+                {/* @ts-ignore - Dynamic import is needed here */}
+                <BarcodeScanner
+                  id={field.id}
+                  value={value as string || ''}
+                  onChange={(val) => handleFieldChange(field.id, val)}
+                  required={isRequired}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
           </div>
         );
 

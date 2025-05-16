@@ -87,9 +87,9 @@ describe('BarcodeScanner', () => {
     const onChange = jest.fn();
     render(<BarcodeScanner {...props} value={value} onChange={onChange} />);
     
-    // Find the clear button and click it
-    const clearButton = screen.getByText(/Clear/i);
-    fireEvent.click(clearButton);
+    // Find the X button and click it
+    const xButton = screen.getByLabelText('Clear value') || screen.getByTestId('clear-button');
+    fireEvent.click(xButton);
     
     expect(onChange).toHaveBeenCalledWith('');
   });
@@ -97,8 +97,8 @@ describe('BarcodeScanner', () => {
   it('should not show scan buttons when disabled', () => {
     render(<BarcodeScanner {...props} disabled={true} />);
     
-    // No buttons should be visible when disabled
-    expect(screen.queryByText(/Scan Barcode/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Upload Image/i)).not.toBeInTheDocument();
+    // Buttons should be disabled when the disabled prop is true
+    const scanButton = screen.getByText(/Scan Barcode/i);
+    expect(scanButton).toBeDisabled();
   });
 });

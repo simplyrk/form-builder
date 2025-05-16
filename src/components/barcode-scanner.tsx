@@ -10,7 +10,7 @@ import {
   HTMLCanvasElementLuminanceSource,
   DecodeHintType
 } from '@zxing/library';
-import { Camera, Loader2, Upload } from 'lucide-react';
+import { Camera, Loader2, Upload, X, Check, Pencil } from 'lucide-react';
 
 import { Button } from './ui/button';
 
@@ -35,11 +35,14 @@ export function BarcodeScanner({
 }: BarcodeScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize the barcode reader
   useEffect(() => {
@@ -51,6 +54,18 @@ export function BarcodeScanner({
       stopScanning();
     };
   }, []);
+
+  // Update edit value when value prop changes
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
 
   // Start the camera and scanning process
   const startScanning = async () => {
@@ -177,6 +192,41 @@ export function BarcodeScanner({
     }
   };
 
+  // Clear the current barcode value
+  const clearValue = () => {
+    if (onChange) {
+      onChange('');
+    }
+  };
+
+  // Start editing the barcode value manually
+  const startEditing = () => {
+    setIsEditing(true);
+  };
+
+  // Save the edited barcode value
+  const saveEdit = () => {
+    if (onChange) {
+      onChange(editValue);
+    }
+    setIsEditing(false);
+  };
+
+  // Cancel editing and revert to original value
+  const cancelEdit = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  // Handle keyboard events in edit mode
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      saveEdit();
+    } else if (e.key === 'Escape') {
+      cancelEdit();
+    }
+  };
+
   // Render the component
   if (isScanning) {
     return (
@@ -215,49 +265,128 @@ export function BarcodeScanner({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        {/* Camera button */}
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={startScanning}
-          disabled={disabled || isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Camera className="h-4 w-4 mr-2" />
-          )}
-          Scan Barcode
-        </Button>
-        
-        {/* File upload button */}
-        <div className="relative">
-          <input
-            type="file"
-            id={`file-upload-${id}`}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            accept="image/*"
-            onChange={handleFileUpload}
-            disabled={disabled || isLoading}
-          />
+      {/* Display current value if available */}
+      {value ? (
+        isEditing ? (
+          <div className="flex items-center space-x-2">
+            <input
+              ref={inputRef}
+              type="text"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={disabled}
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={saveEdit}
+              disabled={disabled}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm" 
+              onClick={cancelEdit}
+              disabled={disabled}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-2 p-2 bg-primary/10 border border-primary/20 rounded-md">
+            <Check className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium flex-1 truncate">{value}</span>
+            <div className="flex items-center">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={startEditing}
+                disabled={disabled}
+                className="h-8 w-8 p-0"
+                aria-label="Edit value"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearValue}
+                disabled={disabled}
+                className="h-8 w-8 p-0"
+                aria-label="Clear value"
+                data-testid="clear-button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )
+      ) : (
+        <div className="flex items-center space-x-2">
+          {/* Camera button */}
           <Button
             type="button"
             variant="outline"
+            className="flex-1"
+            onClick={startScanning}
             disabled={disabled || isLoading}
           >
-            <Upload className="h-4 w-4" />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Camera className="h-4 w-4 mr-2" />
+            )}
+            Scan Barcode
+          </Button>
+          
+          {/* File upload button */}
+          <div className="relative">
+            <input
+              type="file"
+              id={`file-upload-${id}`}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={disabled || isLoading}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={disabled || isLoading}
+              aria-label="Upload image"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {/* Manual entry button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={startEditing}
+            disabled={disabled || isLoading}
+            aria-label="Manual entry"
+          >
+            <Pencil className="h-4 w-4" />
           </Button>
         </div>
-      </div>
-      
-      {/* Display current value if available */}
-      {value && (
-        <div className="p-2 bg-primary/10 border border-primary/20 rounded-md">
-          <p className="text-sm font-medium">{value}</p>
-        </div>
       )}
+      
+      {/* Hidden input for form submission */}
+      <input
+        type="hidden"
+        id={id}
+        name={id}
+        value={value}
+        required={required}
+      />
     </div>
   );
 }

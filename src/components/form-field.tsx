@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { AlertCircle, Camera, CheckCircle, FileIcon, ImageIcon, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { BarcodeScanner } from '@/components/barcode-scanner';
 import { LinkedSubmissionDisplay } from '@/components/linked-submission-display';
 import { LinkedSubmissionSearch } from '@/components/linked-submission-search';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ type FieldValue = {
   time: string;
   datetime: string;
   picklist: string;
+  barcode: string;
   linkedSubmission: string;
 };
 
@@ -464,6 +466,18 @@ export function FormField({ field, value, onChange, disabled = false }: FormFiel
                 formId={field.linkedFormId}
               />
             )}
+          </div>
+        );
+      case 'barcode':
+        return (
+          <div className="space-y-2">
+            <BarcodeScanner
+              id={field.id}
+              required={field.required}
+              disabled={disabled}
+              value={value as string || ''}
+              onChange={(barcode) => onChange(barcode as FieldValue['barcode'])}
+            />
           </div>
         );
       default:

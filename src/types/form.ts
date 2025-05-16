@@ -56,6 +56,7 @@ export type FieldType =
   | 'radio'
   | 'file'
   | 'picklist'
+  | 'barcode'
   | 'linkedSubmission';
 
 export interface FormField {

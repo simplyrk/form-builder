@@ -29,7 +29,6 @@ export default function RootLayout({
           colorWarning: "#eab308",
           colorInputText: "#111827",
           colorInputBackground: "#f9fafb",
-          colorInputBorder: "#e5e7eb",
           
           // Border radius
           borderRadius: "0.375rem",

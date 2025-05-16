@@ -16,11 +16,11 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { ImageIcon, FileIcon, Trash2, Camera, CheckCircle, AlertCircle } from 'lucide-react';
+import { AlertCircle, Camera, CheckCircle, FileIcon, ImageIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { updateResponse } from '@/app/actions/forms';
@@ -33,8 +33,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Form, FormField, Response, FormResponse, ResponseField } from '@/types/form';
-import { log, error } from '@/utils/logger';
+import type { Form, FormField, FormResponse, Response, ResponseField } from '@/types/form';
+import { error, log } from '@/utils/logger';
 
 /**
  * FileInput Component

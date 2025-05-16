@@ -198,10 +198,16 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
       if (onSuccess) {
         onSuccess();
       } else if (!onSave) {
-        router.back();
+        // Add a small delay before navigation to allow cleanup
+        toast.success('Form saved successfully. Redirecting...');
+        
+        // Delay navigation slightly to allow component cleanup
         setTimeout(() => {
-          router.refresh();
-        }, 100);
+          router.back();
+          setTimeout(() => {
+            router.refresh();
+          }, 100);
+        }, 500);
       }
     } catch (error) {
       console.error('Error saving form:', error);
@@ -351,6 +357,7 @@ export function FormBuilder({ form, onSuccess, onSave }: FormBuilderProps) {
                                 <option value="date">Date</option>
                                 <option value="file">File</option>
                                 <option value="picklist">Picklist</option>
+                                <option value="barcode">Barcode</option>
                                 <option value="linkedSubmission">Linked Submission</option>
                               </select>
                             </div>
